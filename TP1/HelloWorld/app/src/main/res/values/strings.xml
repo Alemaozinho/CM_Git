@@ -1,0 +1,6 @@
+<resources>
+    <string name="hello_string">Hello World V2</string>
+    <string name="my_first_app">My First App</string>
+    <string name="desc_emoji">emoji sorrindo com polegares para cima</string>
+    <string name="activity_oncreate_msg">" activity %1$s onCreate"</string>
+</resources>
