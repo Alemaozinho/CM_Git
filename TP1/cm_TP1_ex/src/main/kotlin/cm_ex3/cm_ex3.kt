@@ -1,33 +1,19 @@
 package cm_ex3
 
-//ficha com titulo, autor e ano
-data class Livro(val titulo: String, val autor: String, val ano: Int)
-
 fun main() {
-    //lista com alguns livros para ter onde procurar
-    val livros = listOf(
-        Livro("mensagens", "fernando pessoa", 1934),
-        Livro("os maias", "eça de queirós", 1888),
-        Livro("o desassossego", "fernando pessoa", 1982),
-        Livro("memorial do convento", "josé saramago", 1982)
-    )
 
-    println("--- biblioteca ---")
+    //começa em 100.0 e multiplica sempre por 0.6
+    val saltos = generateSequence(100.0) { it * 0.6 }
 
-    //o quero procurar
-    val autorParaPesquisar = "fernando pessoa"
-    println("a procurar livros do autor: $autorParaPesquisar")
-    println("---------------------------")
+        .take(15) //primeiros 15 para não encravar
+        .toList() //criar a lista
 
-    //percorrer a lista de livros um por um
-    for (l in livros) {
-        // se o autor do livro for o que eu escrevi em cima, ele mostra o titulo
-        if (l.autor == autorParaPesquisar) {
-            println("encontrei: " + l.titulo + " que saiu em " + l.ano)
+    println("--- resultado dos saltos ---")
+
+    for (s in saltos) {
+        //salto for maior que 1 metro, mostramos
+        if (s >= 1.0) {
+            println("altura: " + "%.2f".format(s) + " metros")
         }
     }
-
-    //mostrar o tamanho da lista total
-    println("---------------------------")
-    println("tenho " + livros.size + " livros na lista")
 }
