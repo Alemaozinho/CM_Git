@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
                 val euros = input.toDouble()
 
                 // Taxa fixa para o exemplo
-                val taxaDolar = 1.10
+                val taxaDolar = 1.16
                 val resultado = euros * taxaDolar
 
                 // Atualizar a tela
