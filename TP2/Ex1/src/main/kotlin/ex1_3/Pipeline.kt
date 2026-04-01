@@ -2,7 +2,7 @@ package ex1_3
 
 class Pipeline {
 
-    private val stages = mutableListOf <Pair<String, (List<String) -> List<String>>>()
+    private val stages = mutableListOf <Pair<String, (List<String>) -> List<String>>>()
 
     fun addStage (name: String, transform: (List<String>) -> List<String>) {
 
@@ -27,20 +27,44 @@ class Pipeline {
 
         println ("Pipeline Stages")
 
-        stages.forEachIndexed { index, stage -> println ("${index + 1}) ${stage.first}{") }
+        stages.forEachIndexed { index, stage -> println ("${index + 1}) ${stage.first}") }
 
     }
+}
 
-    fun buildPipeline (action : Pipeline.() -> Unit) : Pipeline {
+fun buildPipeline (action : Pipeline.() -> Unit) : Pipeline {
 
-        val Pipeline = Pipeline()
-        Pipeline.action()
+    val pipeline = Pipeline()
+    pipeline.action()
 
-        return Pipeline
-
-    }
-
-    
-
+    return pipeline
 
 }
+
+fun main(){
+
+    val logProcessor = buildPipeline {
+
+        addStage("Trim") {lines -> lines.map{ it.trim() } }
+
+        addStage("Filter errors") { lines -> lines.filter { it.contains ("ERROR", ignoreCase = true) } }
+
+        addStage("Uppercase") { lines -> lines.map{ it.uppercase() } }
+
+        addStage ("Add index") { lines -> lines.mapIndexed { index, line -> "${index + 1}. $line" } }
+
+    }
+
+    val Logs = listOf ("INFO: server started ",
+        "ERROR: disk full ",
+        "DEBUG: checking config ",
+        "ERROR: out of memory ",
+        "ERROR: connection timeout " )
+
+    logProcessor.describe()
+
+    val finalOutput = logProcessor.execute(Logs)
+    finalOutput.forEach { println(it) }
+}
+
+
