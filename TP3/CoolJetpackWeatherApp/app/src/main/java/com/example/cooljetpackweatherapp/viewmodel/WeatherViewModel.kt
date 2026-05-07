@@ -23,25 +23,23 @@ class WeatherViewModel : ViewModel() {
         _uiState.update { it.copy(longitude = lon) }
     }
 
+    // Função que liga ao WeatherApiClient para buscar dados reais
     fun fetchWeather() {
         viewModelScope.launch {
             try {
                 val data = WeatherApiClient.getWeather(_uiState.value.latitude, _uiState.value.longitude)
-
                 if (data != null) {
                     _uiState.update { currentState ->
                         currentState.copy(
-                            // Usamos ?. para aceder e ?: para dar um valor base se for nulo
                             temperature = data.current_weather?.temperature ?: 0f,
                             windspeed = data.current_weather?.windspeed ?: 0f,
-                            winddirection = data.current_weather?.winddirection ?: 0,
-                            // A pressão vem da lista hourly. Se a lista estiver vazia, pomos 0.0
                             seaLevelPressure = data.hourly?.pressure_msl?.firstOrNull() ?: 0f,
                             time = data.current_weather?.time ?: "N/A"
                         )
                     }
                 }
             } catch (e: Exception) {
+                // Se falhar a net ou a API, o erro aparece no Logcat para eu ver
                 e.printStackTrace()
             }
         }

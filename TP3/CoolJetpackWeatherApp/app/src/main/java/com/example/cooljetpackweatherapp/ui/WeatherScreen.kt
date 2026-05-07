@@ -15,89 +15,80 @@ import com.example.cooljetpackweatherapp.viewmodel.WeatherViewModel
 
 @Composable
 fun WeatherUI(weatherViewModel: WeatherViewModel = viewModel()) {
-    // Observa o estado que vem do ViewModel
     val weatherUIState by weatherViewModel.uiState.collectAsState()
 
-    // Variáveis locais para controlar o texto que escrevemos nas caixas (permite escrever o ponto decimal)
+    // Variáveis para as caixas de texto
     var latText by remember { mutableStateOf(weatherUIState.latitude.toString()) }
     var lonText by remember { mutableStateOf(weatherUIState.longitude.toString()) }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 1. TÍTULO DA APP
         Text(
             text = stringResource(id = R.string.app_name),
             style = MaterialTheme.typography.headlineMedium
         )
 
-        // 2. CARTÃO DAS COORDENADAS (Com Caixas de Texto Editáveis)
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // INPUTS DE LATITUDE E LONGITUDE
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(id = R.string.title_coordinates),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Caixa da Latitude
                 OutlinedTextField(
                     value = latText,
-                    onValueChange = { novoTexto ->
-                        latText = novoTexto // Atualiza o texto no ecrã
-                        // Se for um número válido, atualiza no ViewModel
-                        novoTexto.toFloatOrNull()?.let { weatherViewModel.updateLatitude(it) }
+                    onValueChange = {
+                        latText = it
+                        it.toFloatOrNull()?.let { v -> weatherViewModel.updateLatitude(v) }
                     },
-                    label = { Text(stringResource(id = R.string.label_latitude)) },
+                    label = { Text("Latitude") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Caixa da Longitude
                 OutlinedTextField(
                     value = lonText,
-                    onValueChange = { novoTexto ->
-                        lonText = novoTexto
-                        novoTexto.toFloatOrNull()?.let { weatherViewModel.updateLongitude(it) }
+                    onValueChange = {
+                        lonText = it
+                        it.toFloatOrNull()?.let { v -> weatherViewModel.updateLongitude(v) }
                     },
-                    label = { Text(stringResource(id = R.string.label_longitude)) },
+                    label = { Text("Longitude") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
 
-        // 3. CARTÃO DA METEOROLOGIA (Resultados)
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // DADOS DA METEOROLOGIA (EXERCÍCIO 3)
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(id = R.string.title_weather),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "${stringResource(id = R.string.label_temperature)} ${weatherUIState.temperature} °C")
-                Text(text = "${stringResource(id = R.string.label_wind_speed)} ${weatherUIState.windspeed} km/h")
-                Text(text = "${stringResource(id = R.string.label_wind_direction)} ${weatherUIState.winddirection}°")
-                Text(text = "${stringResource(id = R.string.label_pressure)} ${weatherUIState.seaLevelPressure} hPa")
-                Text(text = "${stringResource(id = R.string.label_time)} ${weatherUIState.time}")
+                Text(text = "Temperatura: ${weatherUIState.temperature} °C")
+                Text(text = "Vento: ${weatherUIState.windspeed} km/h")
+                Text(text = "Pressão: ${weatherUIState.seaLevelPressure} hPa")
+                Text(text = "Última atualização: ${weatherUIState.time}")
             }
         }
 
-        // 4. BOTÃO DE ATUALIZAR
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // BOTÃO QUE DISPARA O PEDIDO À API
         Button(
-            onClick = {
-                println("BOTÃO CLICADO!") // Isto vai ajudar-nos a ver no Logcat
-                weatherViewModel.fetchWeather()
-            },
+            onClick = { weatherViewModel.fetchWeather() },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(id = R.string.btn_update))
+            Text(text = "Atualizar")
         }
+
+        // --- EXERCÍCIO 4 (EXTRA COMENTADO) ---
+        // Tentei implementar o mapa aqui com OSMDroid, mas como o emulador
+        // não está a carregar as tiles (imagens) por falta de rede, comentei.
+        /*
+        Spacer(modifier = Modifier.height(20.dp))
+        Text(text = "Mapa (Em desenvolvimento)", style = MaterialTheme.typography.titleMedium)
+        Card(modifier = Modifier.fillMaxWidth().height(250.dp).padding(top = 8.dp)) {
+            // O componente de mapa AndroidView ficaria aqui
+        }
+        */
     }
 }

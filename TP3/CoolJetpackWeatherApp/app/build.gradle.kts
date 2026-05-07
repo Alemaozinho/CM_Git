@@ -62,6 +62,7 @@ dependencies {
 
     // Lifecycle e ViewModel para Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
