@@ -10,7 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
-// A lista de portos pré-definidos restaurada
+// A lista de portos pré-definidos
 val PredefinedPorts = listOf(
     "Port of Lisbon, PT",
     "Port of Sines, PT",

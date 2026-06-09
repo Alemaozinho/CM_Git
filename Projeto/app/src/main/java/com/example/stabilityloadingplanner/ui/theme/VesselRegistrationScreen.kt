@@ -25,6 +25,8 @@ fun VesselRegistrationScreen(navController: NavController, viewModel: VesselView
     var lightshipWeight by remember { mutableStateOf("") }
     var lightshipKG by remember { mutableStateOf("") }
     var deadweight by remember { mutableStateOf("") }
+    // NOVO: Variável para guardar o número de Holds
+    var numberOfHolds by remember { mutableStateOf("") }
 
     val isFormValid = name.isNotBlank() && imo.isNotBlank() && deadweight.isNotBlank()
 
@@ -81,7 +83,13 @@ fun VesselRegistrationScreen(navController: NavController, viewModel: VesselView
                         OutlinedTextField(value = lightshipKG, onValueChange = { lightshipKG = it }, label = { Text("Lightship KG (m)") }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary))
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    OutlinedTextField(value = deadweight, onValueChange = { deadweight = it }, label = { Text("Deadweight (t)") }, modifier = Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary))
+
+                    // NOVO: Linha com Deadweight e Number of Holds lado a lado
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedTextField(value = deadweight, onValueChange = { deadweight = it }, label = { Text("Deadweight (t)") }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary))
+                        OutlinedTextField(value = numberOfHolds, onValueChange = { numberOfHolds = it }, label = { Text("Nº of Holds") }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary))
+                    }
+
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(value = displacement, onValueChange = { displacement = it }, label = { Text("Max Displacement (t)") }, modifier = Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary))
 
@@ -97,10 +105,14 @@ fun VesselRegistrationScreen(navController: NavController, viewModel: VesselView
                                 displacement = displacement.toDoubleOrNull() ?: 0.0,
                                 lightshipWeight = lightshipWeight.toDoubleOrNull() ?: 0.0,
                                 lightshipKG = lightshipKG.toDoubleOrNull() ?: 0.0,
-                                deadweight = deadweight.toDoubleOrNull() ?: 0.0
+                                deadweight = deadweight.toDoubleOrNull() ?: 0.0,
+                                // Envia o número de holds (se estiver vazio assume 3 por defeito)
+                                numberOfHolds = numberOfHolds.toIntOrNull() ?: 3
                             )
-                            viewModel.registerVessel(vessel)
-                            navController.navigate("cargo_plan")
+
+                            viewModel.selectVessel(vessel)
+
+                            navController.navigate("loading")
                         },
                         enabled = isFormValid,
                         modifier = Modifier.fillMaxWidth().height(50.dp),

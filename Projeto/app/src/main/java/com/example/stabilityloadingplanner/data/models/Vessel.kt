@@ -8,5 +8,6 @@ data class Vessel(
     val displacement: Double = 0.0,
     val lightshipWeight: Double = 0.0,
     val lightshipKG: Double = 0.0,
-    val deadweight: Double = 0.0
+    val deadweight: Double = 0.0,
+    val numberOfHolds: Int = 0
 )

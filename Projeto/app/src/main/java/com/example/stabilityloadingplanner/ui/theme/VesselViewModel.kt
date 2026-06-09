@@ -42,12 +42,8 @@ class VesselViewModel : ViewModel() {
     val waveSafetyLimit = 3.0
     val isSafetyRisk: Boolean get() = (marineData?.wave_height?.firstOrNull() ?: 0.0) > waveSafetyLimit
 
-    val tanks = mutableStateListOf(
-        Tank("Fore Peak", "500t"), Tank("Hold 1", "2500t"),
-        Tank("Hold 2", "2500t"), Tank("Aft Peak", "400t")
-    )
+    val tanks = mutableStateListOf<Tank>()
 
-    // NOVO: Dicionário que liga o nome do porto às suas coordenadas (Latitude, Longitude)
     private val portCoordinates = mapOf(
         "Port of Lisbon, PT" to Pair(38.71, -9.14),
         "Port of Sines, PT" to Pair(37.95, -8.88),
@@ -59,14 +55,44 @@ class VesselViewModel : ViewModel() {
     )
 
     fun registerVessel(vessel: Vessel) { activeVessel = vessel }
-    fun selectVessel(vessel: Vessel) { activeVessel = vessel; searchResult = null }
+
+    fun selectVessel(vessel: Vessel) {
+        activeVessel = vessel
+
+        // Guardar o navio na VesselDatabase (se for novo)
+        VesselDatabase.addVessel(vessel)
+
+        // Limpar os tanques do navio anterior
+        tanks.clear()
+
+        // Calcular capacidades proporcionais ao tamanho do navio (Deadweight)
+        val forePeakCap = (vessel.deadweight * 0.05).toInt() // 5% do peso total
+        val aftPeakCap = (vessel.deadweight * 0.04).toInt()  // 4% do peso total
+
+        // Adicionar o Fore Peak dinâmico
+        tanks.add(Tank(name = "Fore Peak", capacity = "${forePeakCap}t"))
+
+        // O resto da capacidade é dividida igualmente pelos porões (Holds)
+        val remainingCapacity = vessel.deadweight - forePeakCap - aftPeakCap
+
+        // Caso o numberOfHolds seja 0 ou inválido, evitamos divisão por zero
+        val validHolds = if (vessel.numberOfHolds > 0) vessel.numberOfHolds else 1
+        val holdCapacity = (remainingCapacity / validHolds).toInt()
+
+        for (i in 1..validHolds) {
+            tanks.add(Tank(name = "Hold $i", capacity = "${holdCapacity}t"))
+        }
+
+        // Adicionar o Aft Peak dinâmico
+        tanks.add(Tank(name = "Aft Peak", capacity = "${aftPeakCap}t"))
+    }
+
     fun searchVesselByImo(imo: String) { searchResult = VesselDatabase.getByImo(imo.trim()) }
 
-    // ATUALIZADO: Quando mudas a viagem, ele vai buscar as coordenadas do porto de partida
     fun updateVoyage(departure: String, arrival: String, days: Int) {
-        currentVoyage = Voyage(departure, arrival, days)
+        // Criar a viagem apenas com os parâmetros que o modelo atual suporta
+        currentVoyage = Voyage(departure, arrival)
 
-        // Verifica se o porto de partida existe no nosso dicionário
         val coords = portCoordinates[departure]
         if (coords != null) {
             updateCoordinates(coords.first, coords.second)
@@ -104,8 +130,8 @@ class VesselViewModel : ViewModel() {
     }
 
     val currentKG: Double get() {
-        val lightshipWeight = activeVessel.lightshipWeight.toDouble()
-        val lightshipKG = activeVessel.lightshipKG.toDouble()
+        val lightshipWeight = activeVessel.lightshipWeight
+        val lightshipKG = activeVessel.lightshipKG
         val totalWeight = lightshipWeight + tanks.sumOf { it.weightFloat.toDouble() }
 
         if (totalWeight <= 0) return 0.0
@@ -113,5 +139,12 @@ class VesselViewModel : ViewModel() {
         return totalMoment / totalWeight
     }
 
-    val currentGM: Double get() = 6.0 - currentKG
+    val currentGM: Double get() {
+        // Se ainda não escolhemos um navio (não tem nome ou o peso é 0), devolve 0.0
+        if (activeVessel.name.isEmpty() || activeVessel.lightshipWeight <= 0) {
+            return 0.0
+        }
+        // Caso contrário, faz a conta normal
+        return 6.0 - currentKG
+    }
 }
