@@ -140,11 +140,23 @@ class VesselViewModel : ViewModel() {
     }
 
     val currentGM: Double get() {
-        // Se ainda não escolhemos um navio (não tem nome ou o peso é 0), devolve 0.0
+        // Trava de segurança: se não tiver navio ou peso, GM é 0
         if (activeVessel.name.isEmpty() || activeVessel.lightshipWeight <= 0) {
             return 0.0
         }
-        // Caso contrário, faz a conta normal
-        return 6.0 - currentKG
+
+        val totalDisplacement = activeVessel.lightshipWeight + tanks.sumOf { it.weightFloat.toDouble() }
+        if (totalDisplacement <= 0) return 0.0
+
+        // KB estimado
+        val estimatedDraft = totalDisplacement / (activeVessel.loa * activeVessel.beam * 0.75)
+        val kb = estimatedDraft / 2.0
+
+        // BM = I / V
+        val waterDensity = 1.025
+        val volume = totalDisplacement / waterDensity
+        val bm = (activeVessel.loa * Math.pow(activeVessel.beam, 3.0) / 12.0) / volume
+        val kmt = kb + bm
+        return kmt - currentKG
     }
 }
