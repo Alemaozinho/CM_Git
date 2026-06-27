@@ -216,6 +216,17 @@ The app ships with two built-in test accounts:
 
 ---
 
+## 📊 Project Documents
+
+| Document | View |
+|---|---|
+| Wire-frames (all 12 screens) | [Open](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Alemaozinho/CM_Git/main/Projeto/docs/wireframes.html) |
+| Navigation Map | [Open](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Alemaozinho/CM_Git/main/Projeto/docs/navigation_map.html) |
+| Entity-Association Diagram | [Open](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Alemaozinho/CM_Git/main/Projeto/docs/entity_association.html) |
+| Application Concept Document | [docs/ACD.md](docs/ACD.md) |
+
+---
+
 ## 📄 License
 
 Academic project — ENIDH 2025/2026. Not for commercial use.
