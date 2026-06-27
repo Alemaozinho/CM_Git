@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StabilityLoadingPlanner — Entity-Association Diagram</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Courier New', monospace; background: #fafafa; padding: 40px 24px; color: #111; }
+  h1 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 2px; }
+  .subtitle { text-align: center; font-size: 12px; color: #666; margin-bottom: 12px; }
+  .note-box { max-width: 700px; margin: 0 auto 32px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 12px 16px; font-size: 12px; color: #5d4037; line-height: 1.6; }
+  #erd { max-width: 900px; margin: 0 auto; }
+  .schema { max-width: 900px; margin: 32px auto 0; font-size: 12px; line-height: 1.7; }
+  .schema h2 { font-size: 14px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
+  .schema pre { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 12px 16px; overflow-x: auto; font-size: 11px; line-height: 1.8; }
+  p.note { text-align: center; margin-top: 28px; font-size: 11px; color: #999; }
+  #erd svg { max-width: 100% !important; height: auto !important; }
+</style>
+</head>
+<body>
+
+<h1>StabilityLoadingPlanner</h1>
+<p class="subtitle">Entity-Association Diagram (Firebase Firestore) · Lucas Alemão Nº 15052 · ENIDH · Computação Móvel 2025/2026</p>
+
+<div class="note-box">
+  <strong>Architecture note:</strong> The database is split into two levels — <em>shared</em> (vessels collection, visible to all users) and <em>private</em> (each user's own history, voyages, and saved vessels). This enables a collaborative vessel database where the first user to search a vessel by IMO populates the data for all future users.
+</div>
+
+<div id="erd"></div>
+
+<div class="schema">
+  <h2>Firestore Collection Schema</h2>
+  <pre>
+Firestore (root)
+│
+├── vessels/                        [SHARED — all users read/write]
+│   └── {imo}/
+│       ├── imo:              string    (PK — IMO number e.g. "9584188")
+│       ├── name:             string    (vessel name)
+│       ├── type:             string    (vessel type: Bulk Carrier, Tanker, ...)
+│       ├── loa:              number    (length overall, metres)
+│       ├── beam:             number    (breadth, metres)
+│       ├── deadweight:       number    (DWT, tonnes)
+│       ├── lightshipWeight:  number    (lightweight, tonnes)
+│       ├── lightshipKG:      number    (lightship centre of gravity, metres)
+│       ├── numberOfHolds:    number    (cargo holds count)
+│       ├── flag:             string    (flag state ISO code)
+│       ├── yearBuilt:        number    (year of construction)
+│       ├── isEstimated:      boolean   (true if dimensions were auto-estimated)
+│       ├── registeredBy:     string    (uid of first user who added this vessel)
+│       └── lastUpdated:      timestamp
+│
+└── users/                          [PRIVATE — per authenticated user]
+    └── {uid}/
+        ├── profile/
+        │   ├── displayName:  string
+        │   ├── email:        string
+        │   ├── plan:         string    ("free" | "pro")
+        │   └── createdAt:   timestamp
+        │
+        ├── searchHistory/
+        │   └── {id}/
+        │       ├── imo:      string
+        │       ├── name:     string
+        │       └── searchedAt: timestamp
+        │
+        ├── savedVessels/           [user's personal fleet]
+        │   └── {imo}/
+        │       ├── imo:      string
+        │       ├── name:     string
+        │       └── savedAt:  timestamp
+        │
+        └── voyages/               [PRO feature — voyage history]
+            └── {id}/
+                ├── vesselImo:     string
+                ├── vesselName:    string
+                ├── departurePort: string
+                ├── arrivalPort:   string
+                ├── gmResult:      number
+                ├── kgResult:      number
+                ├── isStable:      boolean
+                ├── totalCargo:    number
+                ├── cargoData:     map       (hold name → weight)
+                ├── marineConditions: map
+                └── createdAt:     timestamp
+  </pre>
+</div>
+
+<p class="note">Entity-Association Diagram · StabilityLoadingPlanner v1.0 · Firebase Firestore</p>
+
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: 'Courier New, monospace',
+  themeVariables: {
+    fontSize: '13px',
+    fontFamily: 'Courier New, monospace',
+    lineColor: '#555',
+    textColor: '#111',
+    attributeBackgroundColorOdd: '#fafafa',
+    attributeBackgroundColorEven: '#f0f0f0',
+  },
+});
+
+const diagram = `
+erDiagram
+  USERS {
+    string uid PK
+    string displayName
+    string email
+    string plan
+    timestamp createdAt
+  }
+
+  VESSELS {
+    string imo PK
+    string name
+    string type
+    number loa
+    number beam
+    number deadweight
+    number lightshipWeight
+    number lightshipKG
+    number numberOfHolds
+    string flag
+    boolean isEstimated
+    string registeredBy FK
+    timestamp lastUpdated
+  }
+
+  SEARCH_HISTORY {
+    string id PK
+    string uid FK
+    string imo FK
+    string vesselName
+    timestamp searchedAt
+  }
+
+  SAVED_VESSELS {
+    string uid FK
+    string imo FK
+    timestamp savedAt
+  }
+
+  VOYAGES {
+    string id PK
+    string uid FK
+    string vesselImo FK
+    string departurePort
+    string arrivalPort
+    number gmResult
+    number kgResult
+    boolean isStable
+    number totalCargo
+    timestamp createdAt
+  }
+
+  USERS ||--o{ SEARCH_HISTORY : "has"
+  USERS ||--o{ SAVED_VESSELS : "saves"
+  USERS ||--o{ VOYAGES : "records"
+  VESSELS ||--o{ SEARCH_HISTORY : "appears in"
+  VESSELS ||--o{ SAVED_VESSELS : "stored in"
+  VESSELS ||--o{ VOYAGES : "used in"
+  USERS ||--o{ VESSELS : "contributes"
+`;
+
+const { svg } = await mermaid.render('erd-svg', diagram);
+document.getElementById('erd').innerHTML = svg;
+
+document.querySelectorAll('#erd svg .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '6');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+</script>
+</body>
+</html>

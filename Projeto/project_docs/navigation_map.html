@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StabilityLoadingPlanner — Navigation Map</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: #fafafa; padding: 40px 24px; color: #111; }
+  h1 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 2px; }
+  .subtitle { text-align: center; font-size: 12px; color: #666; font-family: 'Courier New', monospace; margin-bottom: 40px; }
+  #nav-diagram { max-width: 900px; margin: 0 auto; }
+  .legend { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 32px; font-family: 'Courier New', monospace; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+  p.note { text-align: center; margin-top: 28px; font-size: 11px; color: #999; font-family: 'Courier New', monospace; }
+</style>
+</head>
+<body>
+
+<h1>StabilityLoadingPlanner</h1>
+<p class="subtitle">Navigation Map · Screen Flow · Lucas Alemão Nº 15052 · ENIDH · Computação Móvel 2025/2026</p>
+
+<div id="nav-diagram"></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#1565c0;"></div> Auth screens</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#0f6e56;"></div> Core workflow</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#854f0b;"></div> Info screens</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5d4037;"></div> PRO feature</div>
+</div>
+
+<p class="note">Navigation Map · StabilityLoadingPlanner v1.0 · Bottom navigation bar connects all core screens</p>
+
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: 'Courier New, monospace',
+  themeVariables: {
+    fontSize: '14px',
+    fontFamily: 'Courier New, monospace',
+    lineColor: '#555',
+    textColor: '#111',
+    primaryColor: '#e3f2fd',
+    primaryBorderColor: '#1565c0',
+    primaryTextColor: '#0d2b5e',
+    secondaryColor: '#e8f5e9',
+    secondaryBorderColor: '#0f6e56',
+    secondaryTextColor: '#04342c',
+    tertiaryColor: '#fff8e1',
+    tertiaryBorderColor: '#854f0b',
+    tertiaryTextColor: '#412402',
+    edgeLabelBackground: '#fff',
+  },
+});
+
+const diagram = `
+flowchart TD
+  A([App Start]) --> B[Login Screen]
+  B --> C[Register Screen]
+  B --> D[Vessel Setup]
+  C --> D
+
+  D --> E[Vessel Registration]
+  D --> F[Cargo Plan]
+  E --> F
+
+  F --> G[Stability Screen]
+  G --> H[Marine Conditions]
+  H --> I[Voyage Settings]
+  I --> H
+
+  F --> J[Reports Screen]
+  G --> J
+
+  D --- BNAV
+  F --- BNAV
+  G --- BNAV
+  H --- BNAV
+  J --- BNAV
+  BNAV[Bottom Navigation Bar] --- K[Profile Screen]
+
+  D -.->|three-dot menu| L[About]
+  D -.->|three-dot menu| M[Help]
+  F -.->|three-dot menu| L
+  F -.->|three-dot menu| M
+
+  style A fill:#f5f5f5,stroke:#888,color:#333
+  style B fill:#e3f2fd,stroke:#1565c0,color:#0d2b5e
+  style C fill:#e3f2fd,stroke:#1565c0,color:#0d2b5e
+  style D fill:#e8f5e9,stroke:#0f6e56,color:#04342c
+  style E fill:#e8f5e9,stroke:#0f6e56,color:#04342c
+  style F fill:#e8f5e9,stroke:#0f6e56,color:#04342c
+  style G fill:#e8f5e9,stroke:#0f6e56,color:#04342c
+  style H fill:#e8f5e9,stroke:#0f6e56,color:#04342c
+  style I fill:#e8f5e9,stroke:#0f6e56,color:#04342c
+  style J fill:#fff3e0,stroke:#854f0b,color:#412402
+  style K fill:#f5f5f5,stroke:#555,color:#222
+  style L fill:#fbe9e7,stroke:#bf360c,color:#4e342e
+  style M fill:#fbe9e7,stroke:#bf360c,color:#4e342e
+  style BNAV fill:#fff,stroke:#999,color:#444,stroke-dasharray:4
+`;
+
+const { svg } = await mermaid.render('nav-svg', diagram);
+document.getElementById('nav-diagram').innerHTML = svg;
+</script>
+</body>
+</html>
