@@ -27,3 +27,11 @@ DESIGN*.md
 stitch_*/
 google-services.json
 *.pdf
+*.zip
+*.png
+code.html
+DESIGN*.md
+.DS_Store
+stitch_*/
+google-services.json
+*.pdf
