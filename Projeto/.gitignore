@@ -13,3 +13,17 @@
 .externalNativeBuild
 .cxx
 local.properties
+*.zip
+*.png
+code.html
+DESIGN*.md
+.DS_Store
+stitch_*/
+*.zip
+*.png
+code.html
+DESIGN*.md
+.DS_Store
+stitch_*/
+google-services.json
+*.pdf
