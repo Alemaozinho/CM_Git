@@ -6,150 +6,160 @@
 <title>StabilityLoadingPlanner — Entity-Association Diagram</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Courier New', monospace; background: #fafafa; padding: 40px 24px; color: #111; }
+  body { font-family: 'Courier New', monospace; background: #fafafa; padding: 32px 24px; color: #111; }
   h1 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 2px; }
   .subtitle { text-align: center; font-size: 12px; color: #666; margin-bottom: 12px; }
-  .note-box { max-width: 700px; margin: 0 auto 28px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 10px 16px; font-size: 12px; color: #5d4037; line-height: 1.6; }
-  .diagram { max-width: 900px; margin: 0 auto; }
-  .schema { max-width: 860px; margin: 28px auto 0; }
-  .schema h2 { font-size: 13px; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
-  .schema pre { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 14px 16px; overflow-x: auto; font-size: 11px; line-height: 1.8; }
+  .note-box { max-width: 760px; margin: 0 auto 28px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 10px 16px; font-size: 12px; color: #5d4037; line-height: 1.6; }
+  .erd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; max-width: 900px; margin: 0 auto 32px; }
+  .entity { border-radius: 6px; overflow: hidden; border: 1.5px solid #ccc; font-size: 11px; }
+  .entity-header { padding: 8px 12px; font-weight: 700; font-size: 12px; color: #fff; letter-spacing: 0.5px; }
+  .entity-tag { display: block; font-size: 9px; font-weight: 400; opacity: 0.85; margin-top: 2px; }
+  .entity-body { background: #fff; }
+  .field { padding: 5px 12px; border-top: 1px solid #eee; display: flex; justify-content: space-between; gap: 8px; }
+  .field:nth-child(odd) { background: #fafafa; }
+  .field-name { color: #222; }
+  .field-type { color: #888; font-size: 10px; }
+  .pk { color: #c62828; font-weight: 700; }
+  .fk { color: #1565c0; }
+
+  .users .entity-header    { background: #1565c0; }
+  .users .entity-body      { border-color: #1565c0; }
+  .vessels .entity-header  { background: #0f6e56; }
+  .saved .entity-header    { background: #e65100; }
+  .history .entity-header  { background: #6a1b9a; }
+  .voyages .entity-header  { background: #854f0b; }
+
+  .relations { max-width: 900px; margin: 0 auto 28px; }
+  .relations h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-bottom: 12px; }
+  .rel-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .rel-table th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 700; }
+  .rel-table td { padding: 6px 10px; border: 1px solid #ddd; }
+  .rel-table tr:nth-child(even) td { background: #fafafa; }
+
+  .schema { max-width: 900px; margin: 0 auto; }
+  .schema h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-bottom: 12px; }
+  pre { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 14px 16px; overflow-x: auto; font-size: 11px; line-height: 1.8; }
   p.note { text-align: center; margin-top: 20px; font-size: 11px; color: #999; }
 </style>
 </head>
 <body>
+
 <h1>StabilityLoadingPlanner</h1>
 <p class="subtitle">Entity-Association Diagram · Firebase Firestore · Lucas Alemão Nº 15052 · ENIDH · Computação Móvel 2025/2026</p>
 
 <div class="note-box">
-  <strong>Architecture:</strong> Two-level database — <em>shared</em> (vessels collection, visible to all users) and <em>private</em> (each user's history, voyages, saved vessels). First user to search a vessel by IMO populates data for all future users.
+  <strong>Architecture:</strong> Two-level database —
+  <em>shared</em> (vessels collection, visible to all users) and
+  <em>private</em> (each user's history, voyages, saved vessels).
+  First user to search a vessel by IMO populates data for all future users.
 </div>
 
-<div class="diagram">
-<svg width="100%" viewBox="0 0 820 500" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-      <path d="M2 1L8 5L2 9" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>
-    </marker>
-    <marker id="arr-many" viewBox="0 0 14 10" refX="12" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M2 1L8 5L2 9M8 1L14 5L8 9" fill="none" stroke="#555" stroke-width="1.2" stroke-linecap="round"/>
-    </marker>
-  </defs>
+<!-- Entities -->
+<div class="erd-grid">
 
-  <!-- USERS entity -->
-  <rect x="30" y="180" width="160" height="140" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="0.8"/>
-  <rect x="30" y="180" width="160" height="28" rx="6" fill="#1565c0"/>
-  <rect x="30" y="196" width="160" height="12" fill="#1565c0"/>
-  <text x="110" y="200" text-anchor="middle" font-family="Courier New" font-size="13" font-weight="bold" fill="#fff">USERS</text>
-  <text x="40" y="224" font-family="Courier New" font-size="10" fill="#0d2b5e">uid (PK)</text>
-  <text x="40" y="240" font-family="Courier New" font-size="10" fill="#0d2b5e">displayName</text>
-  <text x="40" y="256" font-family="Courier New" font-size="10" fill="#0d2b5e">email</text>
-  <text x="40" y="272" font-family="Courier New" font-size="10" fill="#0d2b5e">plan  (free | pro)</text>
-  <text x="40" y="288" font-family="Courier New" font-size="10" fill="#0d2b5e">createdAt</text>
-  <text x="40" y="304" font-family="Courier New" font-size="10" fill="#0d2b5e">photoUrl</text>
+  <div class="entity users">
+    <div class="entity-header">USERS<span class="entity-tag">private — per user</span></div>
+    <div class="entity-body">
+      <div class="field"><span class="field-name pk">uid</span><span class="field-type">PK · string</span></div>
+      <div class="field"><span class="field-name">displayName</span><span class="field-type">string</span></div>
+      <div class="field"><span class="field-name">email</span><span class="field-type">string</span></div>
+      <div class="field"><span class="field-name">plan</span><span class="field-type">"free" | "pro"</span></div>
+      <div class="field"><span class="field-name">createdAt</span><span class="field-type">timestamp</span></div>
+      <div class="field"><span class="field-name">photoUrl</span><span class="field-type">string?</span></div>
+    </div>
+  </div>
 
-  <!-- VESSELS entity (shared) -->
-  <rect x="320" y="20" width="180" height="196" rx="6" fill="#e8f5e9" stroke="#0f6e56" stroke-width="0.8"/>
-  <rect x="320" y="20" width="180" height="28" rx="6" fill="#0f6e56"/>
-  <rect x="320" y="36" width="180" height="12" fill="#0f6e56"/>
-  <text x="410" y="40" text-anchor="middle" font-family="Courier New" font-size="13" font-weight="bold" fill="#fff">VESSELS</text>
-  <text x="348" y="58" font-family="Courier New" font-size="9" fill="#777">[shared — all users]</text>
-  <text x="330" y="74" font-family="Courier New" font-size="10" fill="#04342c">imo (PK)</text>
-  <text x="330" y="90" font-family="Courier New" font-size="10" fill="#04342c">name</text>
-  <text x="330" y="106" font-family="Courier New" font-size="10" fill="#04342c">type</text>
-  <text x="330" y="122" font-family="Courier New" font-size="10" fill="#04342c">loa, beam, deadweight</text>
-  <text x="330" y="138" font-family="Courier New" font-size="10" fill="#04342c">lightshipWeight, KG</text>
-  <text x="330" y="154" font-family="Courier New" font-size="10" fill="#04342c">numberOfHolds</text>
-  <text x="330" y="170" font-family="Courier New" font-size="10" fill="#04342c">isEstimated</text>
-  <text x="330" y="186" font-family="Courier New" font-size="10" fill="#04342c">registeredBy (FK)</text>
-  <text x="330" y="202" font-family="Courier New" font-size="10" fill="#04342c">lastUpdated</text>
+  <div class="entity vessels">
+    <div class="entity-header">VESSELS<span class="entity-tag">shared — all users read/write</span></div>
+    <div class="entity-body">
+      <div class="field"><span class="field-name pk">imo</span><span class="field-type">PK · string</span></div>
+      <div class="field"><span class="field-name">name</span><span class="field-type">string</span></div>
+      <div class="field"><span class="field-name">type</span><span class="field-type">string</span></div>
+      <div class="field"><span class="field-name">loa, beam</span><span class="field-type">number (m)</span></div>
+      <div class="field"><span class="field-name">deadweight</span><span class="field-type">number (t)</span></div>
+      <div class="field"><span class="field-name">lightshipWeight</span><span class="field-type">number (t)</span></div>
+      <div class="field"><span class="field-name">lightshipKG</span><span class="field-type">number (m)</span></div>
+      <div class="field"><span class="field-name">numberOfHolds</span><span class="field-type">number</span></div>
+      <div class="field"><span class="field-name">flag</span><span class="field-type">string (ISO)</span></div>
+      <div class="field"><span class="field-name">isEstimated</span><span class="field-type">boolean</span></div>
+      <div class="field"><span class="field-name fk">registeredBy</span><span class="field-type">FK → uid</span></div>
+      <div class="field"><span class="field-name">lastUpdated</span><span class="field-type">timestamp</span></div>
+    </div>
+  </div>
 
-  <!-- SEARCH_HISTORY entity -->
-  <rect x="30" y="380" width="160" height="100" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="0.8"/>
-  <rect x="30" y="380" width="160" height="28" rx="6" fill="#6a1b9a"/>
-  <rect x="30" y="396" width="160" height="12" fill="#6a1b9a"/>
-  <text x="110" y="400" text-anchor="middle" font-family="Courier New" font-size="11" font-weight="bold" fill="#fff">SEARCH_HISTORY</text>
-  <text x="40" y="424" font-family="Courier New" font-size="10" fill="#2e1a47">id (PK)</text>
-  <text x="40" y="440" font-family="Courier New" font-size="10" fill="#2e1a47">uid (FK)</text>
-  <text x="40" y="456" font-family="Courier New" font-size="10" fill="#2e1a47">imo (FK)</text>
-  <text x="40" y="472" font-family="Courier New" font-size="10" fill="#2e1a47">searchedAt</text>
+  <div class="entity history">
+    <div class="entity-header">SEARCH_HISTORY<span class="entity-tag">users/{uid}/searchHistory</span></div>
+    <div class="entity-body">
+      <div class="field"><span class="field-name pk">id</span><span class="field-type">PK · string</span></div>
+      <div class="field"><span class="field-name fk">uid</span><span class="field-type">FK → users</span></div>
+      <div class="field"><span class="field-name fk">imo</span><span class="field-type">FK → vessels</span></div>
+      <div class="field"><span class="field-name">vesselName</span><span class="field-type">string (cached)</span></div>
+      <div class="field"><span class="field-name">searchedAt</span><span class="field-type">timestamp</span></div>
+    </div>
+  </div>
 
-  <!-- SAVED_VESSELS entity -->
-  <rect x="320" y="260" width="180" height="100" rx="6" fill="#fff8e1" stroke="#f57f17" stroke-width="0.8"/>
-  <rect x="320" y="260" width="180" height="28" rx="6" fill="#f57f17"/>
-  <rect x="320" y="276" width="180" height="12" fill="#f57f17"/>
-  <text x="410" y="280" text-anchor="middle" font-family="Courier New" font-size="12" font-weight="bold" fill="#fff">SAVED_VESSELS</text>
-  <text x="330" y="304" font-family="Courier New" font-size="10" fill="#412402">uid (FK)</text>
-  <text x="330" y="320" font-family="Courier New" font-size="10" fill="#412402">imo (FK)</text>
-  <text x="330" y="336" font-family="Courier New" font-size="10" fill="#412402">savedAt</text>
-  <text x="330" y="352" font-family="Courier New" font-size="10" fill="#f57f17">vesselName (cached)</text>
+  <div class="entity saved">
+    <div class="entity-header">SAVED_VESSELS<span class="entity-tag">users/{uid}/savedVessels</span></div>
+    <div class="entity-body">
+      <div class="field"><span class="field-name fk">uid</span><span class="field-type">FK → users</span></div>
+      <div class="field"><span class="field-name fk">imo</span><span class="field-type">FK → vessels</span></div>
+      <div class="field"><span class="field-name">vesselName</span><span class="field-type">string (cached)</span></div>
+      <div class="field"><span class="field-name">savedAt</span><span class="field-type">timestamp</span></div>
+    </div>
+  </div>
 
-  <!-- VOYAGES entity (PRO) -->
-  <rect x="590" y="180" width="200" height="196" rx="6" fill="#fff3e0" stroke="#854f0b" stroke-width="0.8"/>
-  <rect x="590" y="180" width="200" height="28" rx="6" fill="#854f0b"/>
-  <rect x="590" y="196" width="200" height="12" fill="#854f0b"/>
-  <text x="690" y="200" text-anchor="middle" font-family="Courier New" font-size="13" font-weight="bold" fill="#fff">VOYAGES</text>
-  <text x="628" y="218" font-family="Courier New" font-size="9" fill="#aaa">[PRO only]</text>
-  <text x="600" y="234" font-family="Courier New" font-size="10" fill="#412402">id (PK)</text>
-  <text x="600" y="250" font-family="Courier New" font-size="10" fill="#412402">uid (FK)</text>
-  <text x="600" y="266" font-family="Courier New" font-size="10" fill="#412402">vesselImo (FK)</text>
-  <text x="600" y="282" font-family="Courier New" font-size="10" fill="#412402">departurePort</text>
-  <text x="600" y="298" font-family="Courier New" font-size="10" fill="#412402">arrivalPort</text>
-  <text x="600" y="314" font-family="Courier New" font-size="10" fill="#412402">gmResult, kgResult</text>
-  <text x="600" y="330" font-family="Courier New" font-size="10" fill="#412402">isStable</text>
-  <text x="600" y="346" font-family="Courier New" font-size="10" fill="#412402">totalCargo</text>
-  <text x="600" y="362" font-family="Courier New" font-size="10" fill="#412402">cargoData (map)</text>
-  <text x="600" y="378" font-family="Courier New" font-size="10" fill="#412402">createdAt</text>
+  <div class="entity voyages">
+    <div class="entity-header">VOYAGES<span class="entity-tag">users/{uid}/voyages · PRO only</span></div>
+    <div class="entity-body">
+      <div class="field"><span class="field-name pk">id</span><span class="field-type">PK · string</span></div>
+      <div class="field"><span class="field-name fk">uid</span><span class="field-type">FK → users</span></div>
+      <div class="field"><span class="field-name fk">vesselImo</span><span class="field-type">FK → vessels</span></div>
+      <div class="field"><span class="field-name">departurePort</span><span class="field-type">string</span></div>
+      <div class="field"><span class="field-name">arrivalPort</span><span class="field-type">string</span></div>
+      <div class="field"><span class="field-name">gmResult</span><span class="field-type">number (m)</span></div>
+      <div class="field"><span class="field-name">kgResult</span><span class="field-type">number (m)</span></div>
+      <div class="field"><span class="field-name">isStable</span><span class="field-type">boolean</span></div>
+      <div class="field"><span class="field-name">totalCargo</span><span class="field-type">number (t)</span></div>
+      <div class="field"><span class="field-name">cargoData</span><span class="field-type">map</span></div>
+      <div class="field"><span class="field-name">createdAt</span><span class="field-type">timestamp</span></div>
+    </div>
+  </div>
 
-  <!-- Relationship lines -->
-  <!-- USERS 1--* SEARCH_HISTORY -->
-  <line x1="110" y1="320" x2="110" y2="380" stroke="#555" stroke-width="1" marker-end="url(#arr-many)"/>
-  <text x="115" y="355" font-family="Courier New" font-size="9" fill="#666">1 : N</text>
-
-  <!-- USERS 1--* SAVED_VESSELS -->
-  <line x1="190" y1="250" x2="320" y2="300" stroke="#555" stroke-width="1" marker-end="url(#arr-many)"/>
-  <text x="235" y="278" font-family="Courier New" font-size="9" fill="#666">1 : N</text>
-
-  <!-- USERS 1--* VOYAGES -->
-  <line x1="190" y1="230" x2="590" y2="240" stroke="#555" stroke-width="1" marker-end="url(#arr-many)"/>
-  <text x="380" y="224" font-family="Courier New" font-size="9" fill="#666">1 : N</text>
-
-  <!-- USERS 1--* VESSELS (contributes) -->
-  <line x1="190" y1="200" x2="320" y2="120" stroke="#555" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#arr-many)"/>
-  <text x="235" y="148" font-family="Courier New" font-size="9" fill="#888">contributes</text>
-
-  <!-- VESSELS 1--* SEARCH_HISTORY -->
-  <line x1="320" y1="150" x2="190" y2="430" stroke="#555" stroke-width="1" marker-end="url(#arr-many)"/>
-  <text x="215" y="330" font-family="Courier New" font-size="9" fill="#666">1 : N</text>
-
-  <!-- VESSELS 1--* SAVED_VESSELS -->
-  <line x1="410" y1="216" x2="410" y2="260" stroke="#555" stroke-width="1" marker-end="url(#arr-many)"/>
-  <text x="414" y="242" font-family="Courier New" font-size="9" fill="#666">1 : N</text>
-
-  <!-- VESSELS 1--* VOYAGES -->
-  <line x1="500" y1="110" x2="640" y2="180" stroke="#555" stroke-width="1" marker-end="url(#arr-many)"/>
-  <text x="570" y="135" font-family="Courier New" font-size="9" fill="#666">1 : N</text>
-
-</svg>
 </div>
 
+<!-- Relationships -->
+<div class="relations">
+  <h2>Relationships</h2>
+  <table class="rel-table">
+    <tr><th>Entity A</th><th>Cardinality</th><th>Entity B</th><th>Description</th></tr>
+    <tr><td>USERS</td><td>1 : N</td><td>SEARCH_HISTORY</td><td>Each user has many search history entries</td></tr>
+    <tr><td>USERS</td><td>1 : N</td><td>SAVED_VESSELS</td><td>Each user saves many vessels to their fleet</td></tr>
+    <tr><td>USERS</td><td>1 : N</td><td>VOYAGES</td><td>Each PRO user records many voyages</td></tr>
+    <tr><td>USERS</td><td>N : M</td><td>VESSELS</td><td>Users contribute technical data to the shared vessel database</td></tr>
+    <tr><td>VESSELS</td><td>1 : N</td><td>SEARCH_HISTORY</td><td>A vessel can appear in many users' search history</td></tr>
+    <tr><td>VESSELS</td><td>1 : N</td><td>SAVED_VESSELS</td><td>A vessel can be saved by many users</td></tr>
+    <tr><td>VESSELS</td><td>1 : N</td><td>VOYAGES</td><td>A vessel can be used in many voyages</td></tr>
+  </table>
+</div>
+
+<!-- Schema -->
 <div class="schema">
   <h2>Firestore Collection Schema</h2>
   <pre>
 Firestore (root)
-├── vessels/{imo}                   [SHARED — all users]
+├── vessels/{imo}                     [SHARED — all users read/write]
 │   ├── imo, name, type
 │   ├── loa, beam, deadweight
 │   ├── lightshipWeight, lightshipKG
 │   ├── numberOfHolds, flag
 │   ├── isEstimated (boolean)
-│   ├── registeredBy (uid)
+│   ├── registeredBy (uid FK)
 │   └── lastUpdated (timestamp)
 │
-└── users/{uid}                     [PRIVATE — per user]
+└── users/{uid}                       [PRIVATE — per authenticated user]
     ├── profile/
     │   ├── displayName, email
-    │   ├── plan ("free" | "pro")
+    │   ├── plan  ("free" | "pro")
     │   └── createdAt
     ├── searchHistory/{id}/
     │   ├── imo, vesselName
@@ -157,11 +167,12 @@ Firestore (root)
     ├── savedVessels/{imo}/
     │   ├── imo, vesselName
     │   └── savedAt
-    └── voyages/{id}/               [PRO only]
+    └── voyages/{id}/                 [PRO only]
         ├── vesselImo, vesselName
         ├── departurePort, arrivalPort
         ├── gmResult, kgResult, isStable
-        ├── totalCargo, cargoData (map)
+        ├── totalCargo
+        ├── cargoData (map: hold → weight)
         └── createdAt</pre>
 </div>
 
