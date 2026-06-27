@@ -9,32 +9,57 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-
-// A lista de portos pré-definidos
-val PredefinedPorts = listOf(
-    "Port of Lisbon, PT",
-    "Port of Sines, PT",
-    "Port of Leixões, PT",
-    "Port of Rotterdam, NL",
-    "Port of Antwerp, BE",
-    "Port of Hamburg, DE",
-    "Port of Algeciras, ES"
-)
+import com.example.stabilityloadingplanner.data.models.PortResult
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoyageSettingsScreen(navController: NavController, viewModel: VesselViewModel) {
-    var dep by remember { mutableStateOf(viewModel.currentVoyage.departurePort) }
-    var arr by remember { mutableStateOf(viewModel.currentVoyage.arrivalPort) }
+    var depQuery by remember { mutableStateOf(viewModel.currentVoyage.departurePort) }
+    var arrQuery by remember { mutableStateOf(viewModel.currentVoyage.arrivalPort) }
+    var depCoords by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
-    // Controlos para abrir/fechar os menus dropdown
-    var expandedDep by remember { mutableStateOf(false) }
-    var expandedArr by remember { mutableStateOf(false) }
+    var depResults by remember { mutableStateOf<List<PortResult>>(emptyList()) }
+    var arrResults by remember { mutableStateOf<List<PortResult>>(emptyList()) }
+    var depLoading by remember { mutableStateOf(false) }
+    var arrLoading by remember { mutableStateOf(false) }
+    var availableCountries by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    // Carrega a lista de países ao abrir o ecrã
+    LaunchedEffect(Unit) {
+        availableCountries = viewModel.getAvailableCountriesAsync()
+    }
+
+    LaunchedEffect(depQuery) {
+        if (depQuery.length >= 3) {
+            depLoading = true
+            delay(400) // Debounce de 400ms — evita disparar um pedido a cada letra escrita
+            depResults = viewModel.searchPortsAsync(depQuery)
+            depLoading = false
+        } else {
+            depResults = emptyList()
+        }
+    }
+
+    LaunchedEffect(arrQuery) {
+        if (arrQuery.length >= 3) {
+            arrLoading = true
+            delay(400)
+            arrResults = viewModel.searchPortsAsync(arrQuery)
+            arrLoading = false
+        } else {
+            arrResults = emptyList()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Voyage Settings", fontWeight = FontWeight.Bold, color = IndustrialPrimary) },
+                actions = { AppMenuActions(navController) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = IndustrialSurface)
             )
         },
@@ -42,7 +67,6 @@ fun VoyageSettingsScreen(navController: NavController, viewModel: VesselViewMode
         containerColor = IndustrialBackground
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = IndustrialSurface),
@@ -51,75 +75,59 @@ fun VoyageSettingsScreen(navController: NavController, viewModel: VesselViewMode
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text("Voyage Plan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text("Set your departure and arrival ports.", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    Text("Search any port in the world (World Port Index).", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Dropdown do Porto de Partida
-                    ExposedDropdownMenuBox(
-                        expanded = expandedDep,
-                        onExpandedChange = { expandedDep = !expandedDep }
-                    ) {
-                        OutlinedTextField(
-                            value = dep,
-                            onValueChange = { dep = it },
-                            label = { Text("Departure Port") },
-                            modifier = Modifier.fillMaxWidth().menuAnchor(),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDep) },
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expandedDep,
-                            onDismissRequest = { expandedDep = false }
-                        ) {
-                            PredefinedPorts.forEach { port ->
-                                DropdownMenuItem(
-                                    text = { Text(port) },
-                                    onClick = {
-                                        dep = port
-                                        expandedDep = false
-                                    }
-                                )
+                    // Controlos para abrir/fechar os menus dropdown
+                    PortSearchField(
+                        label = "Departure Port",
+                        query = depQuery,
+                        onQueryChange = { depQuery = it; depCoords = null },
+                        results = depResults,
+                        isSearching = depLoading,
+                        countries = availableCountries,
+                        onPortSelected = { port ->
+                            depQuery = port.name
+                            depCoords = Pair(port.lat, port.lon)
+                            depResults = emptyList()
+                        },
+                        onBrowseCountry = { code ->
+                            coroutineScope.launch {
+                                depLoading = true
+                                depResults = viewModel.getPortsByCountryAsync(code)
+                                depLoading = false
                             }
                         }
-                    }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Dropdown do Porto de Chegada
-                    ExposedDropdownMenuBox(
-                        expanded = expandedArr,
-                        onExpandedChange = { expandedArr = !expandedArr }
-                    ) {
-                        OutlinedTextField(
-                            value = arr,
-                            onValueChange = { arr = it },
-                            label = { Text("Arrival Port") },
-                            modifier = Modifier.fillMaxWidth().menuAnchor(),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedArr) },
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expandedArr,
-                            onDismissRequest = { expandedArr = false }
-                        ) {
-                            PredefinedPorts.forEach { port ->
-                                DropdownMenuItem(
-                                    text = { Text(port) },
-                                    onClick = {
-                                        arr = port
-                                        expandedArr = false
-                                    }
-                                )
+                    PortSearchField(
+                        label = "Arrival Port",
+                        query = arrQuery,
+                        onQueryChange = { arrQuery = it },
+                        results = arrResults,
+                        isSearching = arrLoading,
+                        countries = availableCountries,
+                        onPortSelected = { port ->
+                            arrQuery = port.name
+                            arrResults = emptyList()
+                        },
+                        onBrowseCountry = { code ->
+                            coroutineScope.launch {
+                                arrLoading = true
+                                arrResults = viewModel.getPortsByCountryAsync(code)
+                                arrLoading = false
                             }
                         }
-                    }
+                    )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Button(
                         onClick = {
-                            viewModel.updateVoyage(dep, arr, 10)
+                            viewModel.updateVoyage(depQuery, arrQuery, depCoords?.first, depCoords?.second)
                             navController.navigate("marine")
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),

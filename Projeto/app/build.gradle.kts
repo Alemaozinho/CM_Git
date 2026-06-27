@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -15,6 +17,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val localProps = Properties()
+        localProps.load(rootProject.file("local.properties").inputStream())
+        buildConfigField("String", "VESSEL_API_KEY", "\"${localProps.getProperty("VESSEL_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -32,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -56,8 +63,10 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    // Ícones Material Design Extended (Para ter o barco, a balança, etc.)
+    // Ícones Material Design Extended
     implementation("androidx.compose.material:material-icons-extended")
 
     implementation("androidx.navigation:navigation-compose:2.8.0")
+
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

@@ -106,13 +106,10 @@ fun VesselRegistrationScreen(navController: NavController, viewModel: VesselView
                                 lightshipWeight = lightshipWeight.toDoubleOrNull() ?: 0.0,
                                 lightshipKG = lightshipKG.toDoubleOrNull() ?: 0.0,
                                 deadweight = deadweight.toDoubleOrNull() ?: 0.0,
-                                // Envia o número de holds (se estiver vazio assume 3 por defeito)
-                                numberOfHolds = numberOfHolds.toIntOrNull() ?: 3
+                                numberOfHolds = numberOfHolds.toIntOrNull() ?: 3 // Envia o número de holds (se estiver vazio assume 3 por defeito)
                             )
-
                             viewModel.selectVessel(vessel)
-
-                            navController.navigate("loading")
+                            navController.navigate("cargo_plan")
                         },
                         enabled = isFormValid,
                         modifier = Modifier.fillMaxWidth().height(50.dp),

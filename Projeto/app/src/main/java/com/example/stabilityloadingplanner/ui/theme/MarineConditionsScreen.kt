@@ -31,6 +31,7 @@ fun MarineConditionsScreen(navController: NavController, viewModel: VesselViewMo
         topBar = {
             TopAppBar(
                 title = { Text("Marine Environment", fontWeight = FontWeight.Bold, color = IndustrialPrimary) },
+                actions = { AppMenuActions(navController) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = IndustrialSurface)
             )
         },
@@ -39,37 +40,72 @@ fun MarineConditionsScreen(navController: NavController, viewModel: VesselViewMo
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
 
-            val m = viewModel.marineData
-            if (m != null) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(16.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp)
-                ) {
-                    item {
-                        Text(
-                            text = "Coordinates: ${viewModel.latitude} / ${viewModel.longitude}",
-                            color = Color.Gray,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-
-                        StabilityMetric("Wave Height", "${m.wave_height?.firstOrNull() ?: 0} m")
-                        StabilityMetric("Wave Period", "${m.wave_period?.firstOrNull() ?: 0} s")
-                        StabilityMetric("Current Velocity", "${m.ocean_current_velocity?.firstOrNull() ?: 0} m/s")
-                        StabilityMetric("Sea Temp", "${m.sea_surface_temperature?.firstOrNull() ?: 0} °C")
+            when {
+                viewModel.isLoadingMarine -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = IndustrialPrimary)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text("Fetching marine data…", color = TextSecondary)
+                        }
                     }
                 }
-            } else {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = IndustrialPrimary)
+
+                viewModel.marineError != null -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
+                            Text("⚠ Connection error", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(viewModel.marineError ?: "", color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+
+                viewModel.marineData != null -> {
+                    val m = viewModel.marineData!!
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        item {
+                            Text(
+                                text = "Coordinates: ${viewModel.latitude} / ${viewModel.longitude}",
+                                color = Color.Gray,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            if (viewModel.isSafetyRisk) {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                                ) {
+                                    Text(
+                                        "⚠ WARNING: Wave height exceeds ${viewModel.waveSafetyLimit} m safety threshold",
+                                        color = Color(0xFFC62828),
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(12.dp)
+                                    )
+                                }
+                            }
+
+                            StabilityMetric("Wave Height", "${m.wave_height?.firstOrNull() ?: 0} m")
+                            StabilityMetric("Wave Period", "${m.wave_period?.firstOrNull() ?: 0} s")
+                            StabilityMetric("Current Velocity", "${m.ocean_current_velocity?.firstOrNull() ?: 0} m/s")
+                            StabilityMetric("Sea Temp", "${m.sea_surface_temperature?.firstOrNull() ?: 0} °C")
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "Voyage: ${viewModel.currentVoyage.departurePort} → ${viewModel.currentVoyage.arrivalPort}",
+                                color = TextSecondary, fontSize = 13.sp
+                            )
+                        }
+                    }
                 }
             }
 
             Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 ExtendedFloatingActionButton(

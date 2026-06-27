@@ -10,14 +10,20 @@ import androidx.navigation.compose.rememberNavController
 fun AppNavigation() {
     val navController = rememberNavController()
     val viewModel: VesselViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = "setup") {
-        composable("setup") { VesselSetupScreen(navController, viewModel) }
-        composable("cargo_plan") { CargoPlanScreen(navController, viewModel) }
-        composable("stability") { StabilityScreen(navController, viewModel) }
-        composable("marine") { MarineConditionsScreen(navController, viewModel) }
-        composable("reports") { ReportsScreen(navController, viewModel) }
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login")               { LoginScreen(navController, authViewModel) }
+        composable("register")            { RegisterScreen(navController, authViewModel) }
+        composable("setup")               { VesselSetupScreen(navController, viewModel) }
         composable("vessel_registration") { VesselRegistrationScreen(navController, viewModel) }
-        composable("voyage_settings") { VoyageSettingsScreen(navController, viewModel) }
+        composable("cargo_plan")          { CargoPlanScreen(navController, viewModel) }
+        composable("stability")           { StabilityScreen(navController, viewModel) }
+        composable("marine")              { MarineConditionsScreen(navController, viewModel) }
+        composable("reports")             { ReportsScreen(navController, viewModel, authViewModel) }
+        composable("voyage_settings")     { VoyageSettingsScreen(navController, viewModel) }
+        composable("profile")             { ProfileScreen(navController, authViewModel) }
+        composable("about")               { AboutScreen(navController) }
+        composable("help")                { HelpScreen(navController) }
     }
 }
