@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">StabilityLoadingPlanner</string>
+
+    <!-- Barra de Navegação -->
+    <string name="nav_setup">Navio</string>
+    <string name="nav_loading">Carga</string>
+    <string name="nav_stability">Estabil.</string>
+    <string name="nav_marine">Mar</string>
+    <string name="nav_reports">Relatório</string>
+    <string name="nav_profile">Perfil</string>
+
+    <!-- VesselSetupScreen -->
+    <string name="setup_title">Configuração do Navio</string>
+    <string name="setup_find_title">Procurar Navio na Base de Dados</string>
+    <string name="setup_find_hint">Introduz o número IMO de 7 dígitos.</string>
+    <string name="setup_imo_label">Número IMO</string>
+    <string name="setup_searching">A pesquisar…</string>
+    <string name="setup_search_btn">Pesquisar Navio</string>
+    <string name="setup_register_btn">Registar Manualmente</string>
+    <string name="setup_vessel_found">Navio Encontrado!</string>
+    <string name="setup_photo_unavailable">Foto indisponível</string>
+    <string name="setup_use_vessel">Usar Este Navio</string>
+    <string name="setup_recent">Pesquisas Recentes</string>
+    <string name="setup_use_again">Usar Novamente</string>
+    <string name="setup_estimated">Dimensões técnicas estimadas a partir do tipo de navio. Pode editar após carregar.</string>
+    <string name="setup_name">Nome: </string>
+    <string name="setup_imo">IMO: </string>
+    <string name="setup_dwt">Arqueação: </string>
+    <string name="setup_loa">LOA: </string>
+    <string name="setup_beam">Boca: </string>
+    <string name="setup_holds">Porões Est.: </string>
+
+    <!-- ProfileScreen -->
+    <string name="profile_title">Perfil</string>
+    <string name="profile_your_plan">O Teu Plano</string>
+    <string name="profile_sign_out">Terminar Sessão</string>
+    <string name="profile_upgrade_btn">Upgrade para PRO — €1/mês</string>
+    <string name="profile_vessel_search">Pesquisa de navios por IMO</string>
+    <string name="profile_cargo">Planeamento de carga</string>
+    <string name="profile_stability_feature">Análise de estabilidade</string>
+    <string name="profile_marine_feature">Condições marítimas</string>
+    <string name="profile_pdf">Exportação PDF</string>
+    <string name="profile_upgrade_title">Upgrade para PRO</string>
+    <string name="profile_upgrade_text">Desbloqueia exportação de relatórios PDF por €1/mês.</string>
+    <string name="profile_upgrade_details">Relatórios incluem dados do navio, plano de carga, resultado de estabilidade (GM/KG) e detalhes da viagem.</string>
+    <string name="profile_pay_btn">Pagar €1/mês</string>
+    <string name="profile_cancel">Cancelar</string>
+    <string name="profile_processing">A processar pagamento…</string>
+    <string name="profile_payment_details">Detalhes de pagamento</string>
+    <string name="profile_welcome_pro">✔  Bem-vindo ao PRO! Exportação PDF desbloqueada.</string>
+
+    <!-- MarineConditionsScreen -->
+    <string name="marine_title">Condições Marítimas</string>
+    <string name="marine_coords">Coordenadas</string>
+    <string name="marine_wave_height">Altura das Ondas</string>
+    <string name="marine_wave_period">Período das Ondas</string>
+    <string name="marine_sea_temp">Temperatura do Mar</string>
+    <string name="marine_safety_warning">⚠ Risco de segurança — condições marítimas adversas.</string>
+    <string name="marine_loading">A carregar dados marítimos…</string>
+    <string name="marine_error">Erro ao carregar dados marítimos.</string>
+    <string name="marine_refresh">Actualizar</string>
+
+    <!-- CargoPlanScreen -->
+    <string name="cargo_title">Plano de Carga</string>
+    <string name="cargo_no_vessel">Nenhum Navio Seleccionado</string>
+    <string name="cargo_no_vessel_desc">Selecciona ou regista um navio no ecrã de Configuração para começar a planear a carga.</string>
+    <string name="cargo_go_setup">Ir para Configuração</string>
+    <string name="cargo_total_load">Carga Total do Navio</string>
+    <string name="cargo_overloaded">⚠ Sobrecarga! A carga excede a capacidade de arqueação.</string>
+    <string name="cargo_estimated">⚠  Dimensões estimadas a partir do tipo de navio.</string>
+    <string name="cargo_load_label">Carga (t)</string>
+    <string name="cargo_edit">Editar</string>
+    <string name="cargo_update_dimensions">Actualizar Dimensões do Navio</string>
+    <string name="cargo_prefilled">Pré-preenchido com os valores actuais. Altera só o que sabes estar errado.</string>
+    <string name="cargo_apply">Aplicar</string>
+</resources>

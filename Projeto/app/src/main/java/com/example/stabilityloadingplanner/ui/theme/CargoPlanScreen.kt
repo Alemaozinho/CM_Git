@@ -29,37 +29,54 @@ fun CargoPlanScreen(navController: NavController, viewModel: VesselViewModel) {
     val vesselCapacity = viewModel.activeVessel.deadweight.toInt()
     val loadPercent    = if (vesselCapacity > 0) (totalLoaded / vesselCapacity * 100).toInt() else 0
 
-    var showEditDialog by remember { mutableStateOf(false) }
+    var showEditDialog    by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(viewModel.snackbarMessage) {
+        viewModel.snackbarMessage?.let { msg ->
+            snackbarHostState.showSnackbar(msg, duration = SnackbarDuration.Short)
+            viewModel.clearSnackbar()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cargo Plan", fontWeight = FontWeight.Bold, color = IndustrialPrimary) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = IndustrialSurface),
+                title   = { Text("Cargo Plan", fontWeight = FontWeight.Bold, color = IndustrialPrimary) },
                 actions = {
-                    if (viewModel.activeVesselHasEstimates) {
+                    // Botão de edição sempre visível quando há navio seleccionado
+                    if (viewModel.hasVesselSelected) {
                         IconButton(onClick = { showEditDialog = true }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit dimensions", tint = IndustrialPrimary)
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Edit vessel dimensions",
+                                // Laranja = dados estimados, azul = dados já corrigidos
+                                tint = if (viewModel.activeVesselHasEstimates) Color(0xFFFF8F00) else IndustrialPrimary
+                            )
                         }
                     }
                     AppMenuActions(navController)
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = IndustrialSurface)
             )
         },
         bottomBar      = { ExactBottomNav(navController, "cargo_plan") },
+        snackbarHost   = { SnackbarHost(snackbarHostState) },
         containerColor = IndustrialBackground
     ) { padding ->
 
         if (!viewModel.hasVesselSelected) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
-                    Icon(Icons.Outlined.DirectionsBoat, contentDescription = null, modifier = Modifier.size(64.dp), tint = OutlineVariant)
+                    Icon(Icons.Outlined.DirectionsBoat, null, modifier = Modifier.size(64.dp), tint = OutlineVariant)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("No Vessel Selected", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Select or register a vessel in the Setup screen to begin planning cargo.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center)
+                    Text("Select or register a vessel in the Setup screen to begin planning cargo.",
+                        style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = { navController.navigate("setup") }, colors = ButtonDefaults.buttonColors(containerColor = IndustrialPrimary)) {
+                    Button(onClick = { navController.navigate("setup") },
+                        colors = ButtonDefaults.buttonColors(containerColor = IndustrialPrimary)) {
                         Text("Go to Setup")
                     }
                 }
@@ -69,29 +86,35 @@ fun CargoPlanScreen(navController: NavController, viewModel: VesselViewModel) {
 
         LazyColumn(
             modifier            = Modifier.padding(padding).padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Banner de aviso quando as dimensões foram estimadas
+                // Banner de estimativas
                 if (viewModel.activeVesselHasEstimates) {
                     Card(
                         colors   = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1)),
                         shape    = RoundedCornerShape(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            "Dimensions estimated from vessel type. Tap ✎ to update.",
-                            style    = MaterialTheme.typography.bodySmall,
-                            color    = Color(0xFF5D4037),
-                            modifier = Modifier.padding(12.dp)
-                        )
+                        Row(
+                            modifier              = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment     = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "⚠  Dimensions estimated — tap ✎ to correct.",
+                                style    = MaterialTheme.typography.bodySmall,
+                                color    = Color(0xFF5D4037),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
 
-                // Cartão do Total
+                // Card do total
                 Card(
                     colors   = CardDefaults.cardColors(containerColor = IndustrialSurface),
                     shape    = RoundedCornerShape(8.dp),
@@ -99,74 +122,124 @@ fun CargoPlanScreen(navController: NavController, viewModel: VesselViewModel) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("Total Vessel Load", fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text(
-                            if (vesselCapacity > 0) "${totalLoaded.toInt()} / $vesselCapacity t  ($loadPercent%)"
-                            else "${viewModel.activeVessel.name}  —  tap ✎ to set capacity",
-                            fontSize   = if (vesselCapacity > 0) 22.sp else 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color      = if (vesselCapacity > 0) TextPrimary else TextSecondary
-                        )
                         if (vesselCapacity > 0) {
+                            Text(
+                                "${totalLoaded.toInt()} / $vesselCapacity t  ($loadPercent%)",
+                                fontSize   = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color      = TextPrimary
+                            )
                             Spacer(modifier = Modifier.height(8.dp))
-                            // Caso o numberOfHolds seja 0 ou inválido, evitamos divisão por zero
                             LinearProgressIndicator(
                                 progress   = { (totalLoaded / vesselCapacity).toFloat().coerceIn(0f, 1f) },
                                 modifier   = Modifier.fillMaxWidth().height(6.dp),
-                                color      = if (loadPercent > 95) Color(0xFFC62828) else IndustrialPrimary,
+                                color      = when {
+                                    loadPercent >= 100 -> Color(0xFFC62828)
+                                    loadPercent >= 90  -> Color(0xFFF57C00)
+                                    else               -> IndustrialPrimary
+                                },
                                 trackColor = OutlineVariant
                             )
                             if (totalLoaded > vesselCapacity) {
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("⚠ Overloaded! Cargo exceeds deadweight capacity.", color = Color(0xFFC62828), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                                Text("⚠ Overloaded! Cargo exceeds deadweight capacity.",
+                                    color = Color(0xFFC62828), style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold)
                             }
+                        } else {
+                            Text("${viewModel.activeVessel.name} — tap ✎ to set capacity",
+                                style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                         }
                     }
                 }
             }
 
-            // Gerar os cartões de tanques dinamicamente com base na lista do ViewModel
-            items(viewModel.tanks) { tank ->
-                TankInputCard(tank = tank, viewModel = viewModel)
-            }
+            items(viewModel.tanks) { tank -> TankInputCard(tank = tank, viewModel = viewModel) }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
 
-    // Diálogo de edição rápida de dimensões
+    // Diálogo de edição pré-preenchido com os valores actuais
     if (showEditDialog) {
-        var dwtInput   by remember { mutableStateOf(viewModel.activeVessel.deadweight.toInt().toString()) }
-        var holdsInput by remember { mutableStateOf(viewModel.activeVessel.numberOfHolds.toString()) }
+        val vessel = viewModel.activeVessel
+
+        var dwtInput   by remember(vessel.imo) {
+            mutableStateOf(if (vessel.deadweight > 0) vessel.deadweight.toInt().toString() else "")
+        }
+        var loaInput   by remember(vessel.imo) {
+            mutableStateOf(if (vessel.loa > 0)  "%.1f".format(vessel.loa)  else "")
+        }
+        var beamInput  by remember(vessel.imo) {
+            mutableStateOf(if (vessel.beam > 0) "%.1f".format(vessel.beam) else "")
+        }
+        var holdsInput by remember(vessel.imo) {
+            mutableStateOf(if (vessel.numberOfHolds > 0) vessel.numberOfHolds.toString() else "")
+        }
 
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
             title = { Text("Update Vessel Dimensions", fontWeight = FontWeight.Bold, color = IndustrialPrimary) },
-            text = {
+            text  = {
                 Column {
                     Text(
-                        "These values were estimated from vessel type. Enter the correct values if known.",
+                        "Pre-filled with current values. Change only what you know is incorrect.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
+
                     OutlinedTextField(
                         value           = dwtInput,
                         onValueChange   = { dwtInput = it },
                         label           = { Text("Deadweight (t)") },
+                        placeholder     = { Text("e.g. 2953") },
                         modifier        = Modifier.fillMaxWidth(),
                         singleLine      = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
+                        colors          = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value           = loaInput,
+                            onValueChange   = { loaInput = it },
+                            label           = { Text("LOA (m)") },
+                            placeholder     = { Text("e.g. 89.0") },
+                            modifier        = Modifier.weight(1f),
+                            singleLine      = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors          = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
+                        )
+                        OutlinedTextField(
+                            value           = beamInput,
+                            onValueChange   = { beamInput = it },
+                            label           = { Text("Beam (m)") },
+                            placeholder     = { Text("e.g. 12.0") },
+                            modifier        = Modifier.weight(1f),
+                            singleLine      = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors          = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+
                     OutlinedTextField(
                         value           = holdsInput,
                         onValueChange   = { holdsInput = it },
                         label           = { Text("Number of Holds") },
+                        placeholder     = { Text("e.g. 4") },
                         modifier        = Modifier.fillMaxWidth(),
                         singleLine      = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
+                        colors          = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        "Corrected data is saved to the shared database for all users.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
                     )
                 }
             },
@@ -174,9 +247,11 @@ fun CargoPlanScreen(navController: NavController, viewModel: VesselViewModel) {
                 Button(
                     onClick = {
                         val dwt   = dwtInput.toDoubleOrNull()  ?: 0.0
-                        val holds = holdsInput.toIntOrNull() ?: 4
+                        val holds = holdsInput.toIntOrNull()   ?: 1
+                        val loa   = loaInput.toDoubleOrNull()
+                        val beam  = beamInput.toDoubleOrNull()
                         if (dwt > 0) {
-                            viewModel.updateActiveVesselDimensions(dwt, holds)
+                            viewModel.updateActiveVesselDimensions(dwt, holds, loa, beam)
                             showEditDialog = false
                         }
                     },
@@ -196,11 +271,7 @@ fun CargoPlanScreen(navController: NavController, viewModel: VesselViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TankInputCard(tank: Tank, viewModel: VesselViewModel) {
-    val progress = if (tank.maxCapacity > 0) {
-        (tank.weightFloat / tank.maxCapacity).coerceIn(0f, 1f)
-    } else 0f
-
-    // Controla se o menu das cargas está aberto ou fechado
+    val progress = if (tank.maxCapacity > 0) (tank.weightFloat / tank.maxCapacity).coerceIn(0f, 1f) else 0f
     var expanded by remember { mutableStateOf(false) }
 
     Card(
@@ -218,24 +289,19 @@ fun TankInputCard(tank: Tank, viewModel: VesselViewModel) {
                     Text(tank.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
                     Text("Capacity: ${tank.capacity}", fontSize = 12.sp, color = TextSecondary)
                     Spacer(modifier = Modifier.height(4.dp))
-
-                    // Texto clicável que abre o menu Dropdown
                     Box {
                         TextButton(
                             onClick        = { expanded = true },
                             contentPadding = PaddingValues(0.dp),
                             modifier       = Modifier.height(24.dp)
                         ) {
-                            Text("Cargo: ${tank.selectedCargo.name} ▼", fontSize = 12.sp, color = IndustrialPrimary)
+                            Text("${tank.selectedCargo.name} ▼", fontSize = 12.sp, color = IndustrialPrimary)
                         }
                         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             CargoOptions.forEach { cargo ->
                                 DropdownMenuItem(
-                                    text    = { Text("${cargo.name}  (VCG ×${cargo.vcgFactor})") },
-                                    onClick = {
-                                        viewModel.updateTankCargo(tank.name, cargo)
-                                        expanded = false
-                                    }
+                                    text    = { Text("${cargo.name}  (VCG ×${"%.2f".format(cargo.vcgFactor)})") },
+                                    onClick = { viewModel.updateTankCargo(tank.name, cargo); expanded = false }
                                 )
                             }
                         }
@@ -243,14 +309,14 @@ fun TankInputCard(tank: Tank, viewModel: VesselViewModel) {
                 }
 
                 OutlinedTextField(
-                    value         = tank.currentWeight,
-                    onValueChange = { newValue -> viewModel.updateTankWeight(tank.name, newValue) },
-                    label         = { Text("Load (t)") },
+                    value           = tank.currentWeight,
+                    onValueChange   = { viewModel.updateTankWeight(tank.name, it) },
+                    label           = { Text("Load (t)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier      = Modifier.width(120.dp),
-                    singleLine    = true,
-                    isError       = tank.isOverloaded,
-                    colors        = OutlinedTextFieldDefaults.colors(
+                    modifier        = Modifier.width(110.dp),
+                    singleLine      = true,
+                    isError         = tank.isOverloaded,
+                    colors          = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor   = IndustrialPrimary,
                         unfocusedBorderColor = Color.LightGray,
                         errorBorderColor     = Color(0xFFC62828)
@@ -258,18 +324,25 @@ fun TankInputCard(tank: Tank, viewModel: VesselViewModel) {
                 )
             }
 
-            if (tank.isOverloaded) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text("Exceeds hold capacity", color = Color(0xFFC62828), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             LinearProgressIndicator(
                 progress   = { progress },
                 modifier   = Modifier.fillMaxWidth().height(4.dp),
-                color      = if (tank.isOverloaded) Color(0xFFC62828) else IndustrialPrimary,
+                color      = when {
+                    progress >= 1f   -> Color(0xFFC62828)
+                    progress >= 0.9f -> Color(0xFFF57C00)
+                    else             -> IndustrialPrimary
+                },
                 trackColor = Color.LightGray
             )
+            if (progress >= 0.9f && tank.maxCapacity > 0) {
+                Text(
+                    "${(progress * 100).toInt()}% of capacity",
+                    style    = MaterialTheme.typography.bodySmall,
+                    color    = if (progress >= 1f) Color(0xFFC62828) else Color(0xFFF57C00),
+                    modifier = Modifier.align(Alignment.End)
+                )
+            }
         }
     }
 }

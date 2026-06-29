@@ -76,4 +76,15 @@ object RetrofitClient {
             .build()
             .create(VesselApiService::class.java)
     }
+
+    val geminiApi: GeminiApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://generativelanguage.googleapis.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(GeminiApiService::class.java)
+    }
+
+    val GEMINI_API_KEY: String
+        get() = BuildConfig.GEMINI_API_KEY
 }

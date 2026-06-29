@@ -1,3 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">StabilityLoadingPlanner</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_setup">Setup</string>
+    <string name="nav_loading">Loading</string>
+    <string name="nav_stability">Stability</string>
+    <string name="nav_marine">Marine</string>
+    <string name="nav_reports">Reports</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- VesselSetupScreen -->
+    <string name="setup_title">Vessel Setup</string>
+    <string name="setup_find_title">Find Vessel in Database</string>
+    <string name="setup_find_hint">Enter the 7-digit IMO number.</string>
+    <string name="setup_imo_label">IMO Number</string>
+    <string name="setup_searching">Searching…</string>
+    <string name="setup_search_btn">Search Vessel</string>
+    <string name="setup_register_btn">Register Manually</string>
+    <string name="setup_vessel_found">Vessel Found!</string>
+    <string name="setup_photo_unavailable">Photo unavailable</string>
+    <string name="setup_use_vessel">Use This Vessel</string>
+    <string name="setup_recent">Recent Searches</string>
+    <string name="setup_use_again">Use Again</string>
+    <string name="setup_estimated">Technical dimensions estimated from vessel type. Edit after loading if needed.</string>
+    <string name="setup_name">Name: </string>
+    <string name="setup_imo">IMO: </string>
+    <string name="setup_dwt">Deadweight: </string>
+    <string name="setup_loa">LOA: </string>
+    <string name="setup_beam">Beam: </string>
+    <string name="setup_holds">Est. Holds: </string>
+
+    <!-- ProfileScreen -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_your_plan">Your Plan</string>
+    <string name="profile_sign_out">Sign Out</string>
+    <string name="profile_upgrade_btn">Upgrade to PRO — €1/month</string>
+    <string name="profile_vessel_search">Vessel search by IMO</string>
+    <string name="profile_cargo">Cargo planning</string>
+    <string name="profile_stability_feature">Stability analysis</string>
+    <string name="profile_marine_feature">Marine conditions</string>
+    <string name="profile_pdf">PDF export</string>
+    <string name="profile_upgrade_title">Upgrade to PRO</string>
+    <string name="profile_upgrade_text">Unlock PDF report export for €1/month.</string>
+    <string name="profile_upgrade_details">Reports include vessel data, cargo plan, stability result (GM/KG) and voyage details.</string>
+    <string name="profile_pay_btn">Pay €1/month</string>
+    <string name="profile_cancel">Cancel</string>
+    <string name="profile_processing">Processing payment…</string>
+    <string name="profile_payment_details">Payment details</string>
+    <string name="profile_welcome_pro">✔  Welcome to PRO! PDF export is now unlocked.</string>
+
+    <!-- MarineConditionsScreen -->
+    <string name="marine_title">Marine Conditions</string>
+    <string name="marine_coords">Coordinates</string>
+    <string name="marine_wave_height">Wave Height</string>
+    <string name="marine_wave_period">Wave Period</string>
+    <string name="marine_sea_temp">Sea Temperature</string>
+    <string name="marine_safety_warning">⚠ Safety risk — adverse sea conditions detected.</string>
+    <string name="marine_loading">Loading marine data…</string>
+    <string name="marine_error">Error loading marine data.</string>
+    <string name="marine_refresh">Refresh</string>
+
+    <!-- CargoPlanScreen -->
+    <string name="cargo_title">Cargo Plan</string>
+    <string name="cargo_no_vessel">No Vessel Selected</string>
+    <string name="cargo_no_vessel_desc">Select or register a vessel in the Setup screen to begin planning cargo.</string>
+    <string name="cargo_go_setup">Go to Setup</string>
+    <string name="cargo_total_load">Total Vessel Load</string>
+    <string name="cargo_overloaded">⚠ Overloaded! Cargo exceeds deadweight capacity.</string>
+    <string name="cargo_estimated">⚠  Dimensions estimated from vessel type.</string>
+    <string name="cargo_load_label">Load (t)</string>
+    <string name="cargo_edit">Edit</string>
+    <string name="cargo_update_dimensions">Update Vessel Dimensions</string>
+    <string name="cargo_prefilled">Pre-filled with current values. Change only what you know is incorrect.</string>
+    <string name="cargo_apply">Apply</string>
 </resources>

@@ -1,191 +1,188 @@
 package com.example.stabilityloadingplanner.ui.theme
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MarineConditionsScreen(navController: NavController, viewModel: VesselViewModel) {
-    LaunchedEffect(Unit) { viewModel.fetchMarineData() }
+fun MarineConditionsScreen(
+    navController: NavController,
+    viewModel: VesselViewModel
+) {
+    val marineData    = viewModel.marineData
+    val isLoading     = viewModel.isLoadingMarine
+    val marineError   = viewModel.marineError
+    val isSafetyRisk  = viewModel.isSafetyRisk
+    val currentVoyage = viewModel.currentVoyage
+    var showMenu      by remember { mutableStateOf(false) }
 
-    var showLocationDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current // Necessário para os Toasts
+    val waveHeight = marineData?.wave_height?.firstOrNull()
+    val wavePeriod = marineData?.wave_period?.firstOrNull()
+    val seaTemp    = marineData?.sea_surface_temperature?.firstOrNull()
+
+    LaunchedEffect(Unit) {
+        if (marineData == null) viewModel.fetchMarineData()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Marine Environment", fontWeight = FontWeight.Bold, color = IndustrialPrimary) },
+                title = {
+                    Text("Marine Conditions", fontWeight = FontWeight.Bold, color = IndustrialPrimary)
+                },
                 actions = { AppMenuActions(navController) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = IndustrialSurface)
+                colors  = TopAppBarDefaults.topAppBarColors(containerColor = IndustrialSurface)
             )
         },
-        bottomBar = { ExactBottomNav(navController, "marine") },
+        bottomBar      = { ExactBottomNav(navController, "marine") },
         containerColor = IndustrialBackground
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
 
-            when {
-                viewModel.isLoadingMarine -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = IndustrialPrimary)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text("Fetching marine data…", color = TextSecondary)
-                        }
-                    }
-                }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
 
-                viewModel.marineError != null -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
-                            Text("⚠ Connection error", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(viewModel.marineError ?: "", color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
-                        }
-                    }
-                }
-
-                viewModel.marineData != null -> {
-                    val m = viewModel.marineData!!
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(16.dp),
-                        contentPadding = PaddingValues(bottom = 80.dp)
-                    ) {
-                        item {
-                            Text(
-                                text = "Coordinates: ${viewModel.latitude} / ${viewModel.longitude}",
-                                color = Color.Gray,
-                                fontSize = 14.sp,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-
-                            if (viewModel.isSafetyRisk) {
-                                Card(
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-                                ) {
-                                    Text(
-                                        "⚠ WARNING: Wave height exceeds ${viewModel.waveSafetyLimit} m safety threshold",
-                                        color = Color(0xFFC62828),
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(12.dp)
-                                    )
-                                }
-                            }
-
-                            StabilityMetric("Wave Height", "${m.wave_height?.firstOrNull() ?: 0} m")
-                            StabilityMetric("Wave Period", "${m.wave_period?.firstOrNull() ?: 0} s")
-                            StabilityMetric("Current Velocity", "${m.ocean_current_velocity?.firstOrNull() ?: 0} m/s")
-                            StabilityMetric("Sea Temp", "${m.sea_surface_temperature?.firstOrNull() ?: 0} °C")
-
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                "Voyage: ${viewModel.currentVoyage.departurePort} → ${viewModel.currentVoyage.arrivalPort}",
-                                color = TextSecondary, fontSize = 13.sp
-                            )
-                        }
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                ExtendedFloatingActionButton(
-                    onClick = { navController.navigate("voyage_settings") },
-                    containerColor = IndustrialSurface,
-                    contentColor = IndustrialPrimary,
-                    text = { Text("Voyage Plan") },
-                    icon = { Icon(Icons.Default.Map, "Voyage Plan") }
-                )
-
-                ExtendedFloatingActionButton(
-                    onClick = { showLocationDialog = true },
-                    containerColor = IndustrialPrimary,
-                    contentColor = Color.White,
-                    text = { Text("Change Location") },
-                    icon = { Icon(Icons.Default.LocationOn, "Location") }
-                )
-            }
-        }
-
-        if (showLocationDialog) {
-            var inputLat by remember { mutableStateOf(viewModel.latitude.toString()) }
-            var inputLon by remember { mutableStateOf(viewModel.longitude.toString()) }
-
-            AlertDialog(
-                onDismissRequest = { showLocationDialog = false },
-                title = { Text("Update Coordinates", fontWeight = FontWeight.Bold, color = IndustrialPrimary) },
-                text = {
-                    Column {
-                        OutlinedTextField(
-                            value = inputLat,
-                            onValueChange = { inputLat = it },
-                            label = { Text("Latitude") },
-                            // Mudei para Text normal para evitar que o teclado bloqueie o sinal de menos
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = inputLon,
-                            onValueChange = { inputLon = it },
-                            label = { Text("Longitude") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = IndustrialPrimary)
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            // Limpeza extrema: Substitui vírgulas por pontos, e limpa TODOS os tipos de hifens/traços manhosos
-                            val safeLatStr = inputLat.replace(",", ".").replace("−", "-").replace("–", "-").replace(" ", "").trim()
-                            val safeLonStr = inputLon.replace(",", ".").replace("−", "-").replace("–", "-").replace(" ", "").trim()
-
-                            val newLat = safeLatStr.toDoubleOrNull()
-                            val newLon = safeLonStr.toDoubleOrNull()
-
-                            if (newLat != null && newLon != null) {
-                                viewModel.updateCoordinates(newLat, newLon)
-                                showLocationDialog = false
-                                Toast.makeText(context, "A atualizar meteorologia...", Toast.LENGTH_SHORT).show()
-                            } else {
-                                // Se o Kotlin não conseguir converter mesmo assim, avisa-te no ecrã!
-                                Toast.makeText(context, "Erro: Formato inválido. Confirma os sinais e pontos.", Toast.LENGTH_LONG).show()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = IndustrialPrimary)
-                    ) {
-                        Text("Update Weather", fontWeight = FontWeight.Bold)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showLocationDialog = false }) {
-                        Text("Cancel", color = IndustrialPrimary)
-                    }
-                },
-                containerColor = IndustrialSurface
+            // Coordenadas
+            Text(
+                text  = "Coordinates: ${String.format("%.2f", viewModel.latitude)} / ${String.format("%.2f", viewModel.longitude)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary
             )
+
+            // Aviso de segurança
+            if (isSafetyRisk) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                    shape  = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier              = Modifier.padding(16.dp),
+                        verticalAlignment     = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFC62828))
+                        Text(
+                            text  = "⚠ Safety risk — adverse sea conditions detected.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFFC62828)
+                        )
+                    }
+                }
+            }
+
+            // A carregar
+            if (isLoading) {
+                Box(
+                    modifier         = Modifier.fillMaxWidth().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CircularProgressIndicator(color = IndustrialPrimary)
+                        Text("Loading marine data...", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    }
+                }
+            }
+
+            // Erro
+            if (marineError != null) {
+                Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))) {
+                    Text(
+                        text     = "Error loading marine data.",
+                        modifier = Modifier.padding(16.dp),
+                        color    = Color(0xFFC62828)
+                    )
+                }
+            }
+
+            // Dados marítimos
+            if (marineData != null) {
+                @Composable
+                fun MarineRow(label: String, value: String) {
+                    Row(
+                        modifier              = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(label, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
+                        Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    }
+                    HorizontalDivider(color = OutlineVariant)
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors   = CardDefaults.cardColors(containerColor = IndustrialSurface),
+                    shape    = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        MarineRow(
+                            label = "Wave Height",
+                            value = if (waveHeight != null) "${String.format("%.2f", waveHeight)} m" else "—"
+                        )
+                        MarineRow(
+                            label = "Wave Period",
+                            value = if (wavePeriod != null) "${String.format("%.2f", wavePeriod)} s" else "—"
+                        )
+                        MarineRow(
+                            label = "Sea Temperature",
+                            value = if (seaTemp != null) "${String.format("%.1f", seaTemp)} °C" else "—"
+                        )
+                    }
+                }
+            }
+
+            // Viagem
+            val departure = currentVoyage.departurePort.ifBlank { "Not Set" }
+            val arrival   = currentVoyage.arrivalPort.ifBlank { "Not Set" }
+            Text(
+                text  = "Voyage: $departure → $arrival",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Botões
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick  = { navController.navigate("voyage_settings") },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Voyage Plan")
+                }
+                Button(
+                    onClick  = { viewModel.fetchMarineData() },
+                    modifier = Modifier.weight(1f),
+                    colors   = ButtonDefaults.buttonColors(containerColor = IndustrialPrimary)
+                ) {
+                    Icon(Icons.Default.Place, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Refresh")
+                }
+            }
         }
     }
 }

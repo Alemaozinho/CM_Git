@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -21,6 +22,7 @@ android {
         val localProps = Properties()
         localProps.load(rootProject.file("local.properties").inputStream())
         buildConfigField("String", "VESSEL_API_KEY", "\"${localProps.getProperty("VESSEL_API_KEY", "")}\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"${localProps.getProperty("GEMINI_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -69,4 +71,13 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    implementation("androidx.appcompat:appcompat:1.6.1")
 }

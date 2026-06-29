@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StabilityLoadingPlanner — Navigation Map</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Courier New', monospace; background: #fafafa; padding: 40px 24px; color: #111; }
+  h1 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 2px; }
+  .subtitle { text-align: center; font-size: 12px; color: #666; margin-bottom: 32px; }
+  .diagram { max-width: 900px; margin: 0 auto; }
+  .legend { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 24px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+  p.note { text-align: center; margin-top: 20px; font-size: 11px; color: #999; }
+</style>
+</head>
+<body>
+<h1>StabilityLoadingPlanner</h1>
+<p class="subtitle">Navigation Map · Screen Flow · Lucas Alemão Nº 15052 · ENIDH · Computação Móvel 2025/2026</p>
+<div class="diagram">
+<svg width="100%" viewBox="0 0 820 680" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>
+    </marker>
+    <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/>
+    </marker>
+  </defs>
+
+  <!-- App Start -->
+  <ellipse cx="400" cy="36" rx="70" ry="20" fill="#f0f0f0" stroke="#888" stroke-width="0.5"/>
+  <text x="400" y="41" text-anchor="middle" font-family="Courier New" font-size="12" fill="#444">App Start</text>
+
+  <!-- Login -->
+  <rect x="280" y="90" width="120" height="36" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="0.5"/>
+  <text x="340" y="113" text-anchor="middle" font-family="Courier New" font-size="12" fill="#0d2b5e">Login</text>
+
+  <!-- Register -->
+  <rect x="420" y="90" width="120" height="36" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="0.5"/>
+  <text x="480" y="113" text-anchor="middle" font-family="Courier New" font-size="12" fill="#0d2b5e">Register</text>
+
+  <line x1="380" y1="56" x2="348" y2="90" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+  <line x1="420" y1="56" x2="462" y2="90" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+  <line x1="420" y1="108" x2="400" y2="108" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+
+  <!-- Vessel Setup -->
+  <rect x="280" y="180" width="120" height="36" rx="6" fill="#e8f5e9" stroke="#0f6e56" stroke-width="0.5"/>
+  <text x="340" y="203" text-anchor="middle" font-family="Courier New" font-size="12" fill="#04342c">Vessel Setup</text>
+
+  <!-- Vessel Registration -->
+  <rect x="430" y="180" width="150" height="36" rx="6" fill="#e8f5e9" stroke="#0f6e56" stroke-width="0.5"/>
+  <text x="505" y="203" text-anchor="middle" font-family="Courier New" font-size="12" fill="#04342c">Vessel Registration</text>
+
+  <line x1="340" y1="126" x2="340" y2="180" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+  <line x1="470" y1="126" x2="380" y2="180" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+  <line x1="400" y1="198" x2="430" y2="198" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+
+  <!-- Cargo Plan -->
+  <rect x="280" y="270" width="120" height="36" rx="6" fill="#e8f5e9" stroke="#0f6e56" stroke-width="0.5"/>
+  <text x="340" y="293" text-anchor="middle" font-family="Courier New" font-size="12" fill="#04342c">Cargo Plan</text>
+
+  <line x1="340" y1="216" x2="340" y2="270" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+  <line x1="505" y1="216" x2="380" y2="270" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+
+  <!-- Stability -->
+  <rect x="280" y="360" width="120" height="36" rx="6" fill="#e8f5e9" stroke="#0f6e56" stroke-width="0.5"/>
+  <text x="340" y="383" text-anchor="middle" font-family="Courier New" font-size="12" fill="#04342c">Stability</text>
+
+  <line x1="340" y1="306" x2="340" y2="360" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+
+  <!-- Marine Conditions -->
+  <rect x="260" y="450" width="150" height="36" rx="6" fill="#e8f5e9" stroke="#0f6e56" stroke-width="0.5"/>
+  <text x="335" y="473" text-anchor="middle" font-family="Courier New" font-size="12" fill="#04342c">Marine Conditions</text>
+
+  <line x1="336" y1="396" x2="333" y2="450" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+
+  <!-- Voyage Settings -->
+  <rect x="440" y="450" width="140" height="36" rx="6" fill="#e8f5e9" stroke="#0f6e56" stroke-width="0.5"/>
+  <text x="510" y="473" text-anchor="middle" font-family="Courier New" font-size="12" fill="#04342c">Voyage Settings</text>
+
+  <line x1="410" y1="464" x2="440" y2="464" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+  <line x1="440" y1="476" x2="410" y2="476" stroke="#555" stroke-width="1" marker-end="url(#arr)"/>
+
+  <!-- Reports (PRO) -->
+  <rect x="440" y="340" width="120" height="40" rx="6" fill="#fff3e0" stroke="#854f0b" stroke-width="0.5"/>
+  <text x="500" y="360" text-anchor="middle" font-family="Courier New" font-size="12" fill="#412402">Reports</text>
+  <text x="500" y="374" text-anchor="middle" font-family="Courier New" font-size="9" fill="#854f0b">PRO: PDF export</text>
+
+  <line x1="400" y1="285" x2="455" y2="340" stroke="#854f0b" stroke-width="0.8" stroke-dasharray="4 2" marker-end="url(#arr2)"/>
+  <line x1="400" y1="375" x2="440" y2="362" stroke="#854f0b" stroke-width="0.8" stroke-dasharray="4 2" marker-end="url(#arr2)"/>
+
+  <!-- Profile -->
+  <rect x="660" y="270" width="120" height="36" rx="6" fill="#f5f5f5" stroke="#666" stroke-width="0.5"/>
+  <text x="720" y="293" text-anchor="middle" font-family="Courier New" font-size="12" fill="#333">Profile</text>
+
+  <!-- About -->
+  <rect x="660" y="380" width="120" height="36" rx="6" fill="#fbe9e7" stroke="#bf360c" stroke-width="0.5"/>
+  <text x="720" y="403" text-anchor="middle" font-family="Courier New" font-size="12" fill="#4e342e">About</text>
+
+  <!-- Help -->
+  <rect x="660" y="430" width="120" height="36" rx="6" fill="#fbe9e7" stroke="#bf360c" stroke-width="0.5"/>
+  <text x="720" y="453" text-anchor="middle" font-family="Courier New" font-size="12" fill="#4e342e">Help</text>
+
+  <!-- three-dot menu label -->
+  <text x="620" y="370" text-anchor="middle" font-family="Courier New" font-size="10" fill="#aaa">⋮ menu</text>
+  <line x1="400" y1="198" x2="660" y2="395" stroke="#ddd" stroke-width="0.8" stroke-dasharray="4 2" marker-end="url(#arr2)"/>
+  <line x1="400" y1="198" x2="660" y2="445" stroke="#ddd" stroke-width="0.8" stroke-dasharray="4 2" marker-end="url(#arr2)"/>
+
+  <!-- Bottom nav bar -->
+  <rect x="50" y="580" width="620" height="32" rx="6" fill="#fff" stroke="#ccc" stroke-width="0.5" stroke-dasharray="5 3"/>
+  <text x="360" y="601" text-anchor="middle" font-family="Courier New" font-size="10" fill="#888">Bottom Nav — Setup · Loading · Stability · Marine · Reports · Profile</text>
+
+  <!-- Profile from bottom nav -->
+  <line x1="640" y1="596" x2="720" y2="306" stroke="#ccc" stroke-width="0.8" stroke-dasharray="3 2"/>
+
+</svg>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#1565c0;"></div> Auth</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#0f6e56;"></div> Core workflow</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#854f0b;"></div> PRO feature</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#bf360c;"></div> Info (menu)</div>
+  <div class="legend-item" style="color:#aaa;">— — — optional / menu nav</div>
+</div>
+<p class="note">Navigation Map · StabilityLoadingPlanner v1.0</p>
+</body>
+</html>
