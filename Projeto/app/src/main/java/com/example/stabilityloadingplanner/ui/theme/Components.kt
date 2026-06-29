@@ -74,7 +74,8 @@ fun AppMenuActions(navController: NavController) {
         val options = listOf(
             Triple("auto", "🌐 System default", "Automático (sistema)"),
             Triple("pt",   "🇵🇹 Português",     "Portuguese"),
-            Triple("en",   "🇬🇧 English",        "Inglês")
+            Triple("en",   "🇬🇧 English",        "Inglês"),
+            Triple("es",   "🇪🇸 Español",        "Espanhol")
         )
         AlertDialog(
             onDismissRequest = { showLangDialog = false },
