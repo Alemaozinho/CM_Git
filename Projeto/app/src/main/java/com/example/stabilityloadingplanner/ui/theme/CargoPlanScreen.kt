@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.DirectionsBoat
 import androidx.compose.material3.*
@@ -155,6 +156,25 @@ fun CargoPlanScreen(navController: NavController, viewModel: VesselViewModel) {
             }
 
             items(viewModel.tanks) { tank -> TankInputCard(tank = tank, viewModel = viewModel) }
+
+            // CTA para Stability — aparece assim que há carga lançada.
+            // Resolve a hesitação observada nos testes de usabilidade (User 1 e 2):
+            // a app não navega sozinha para Stability, mas agora mostra claramente o próximo passo.
+            if (totalLoaded > 0) {
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Button(
+                        onClick  = { navController.navigate("stability") },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape    = RoundedCornerShape(8.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = IndustrialPrimary)
+                    ) {
+                        Text("View Stability Analysis", fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
+                    }
+                }
+            }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
         }

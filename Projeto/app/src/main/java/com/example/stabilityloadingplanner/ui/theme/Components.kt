@@ -77,6 +77,7 @@ fun AppMenuActions(navController: NavController) {
             Triple("en",   "🇬🇧 English",        "Inglês"),
             Triple("es",   "🇪🇸 Español",        "Espanhol")
         )
+
         AlertDialog(
             onDismissRequest = { showLangDialog = false },
             title            = {
