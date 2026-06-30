@@ -20,7 +20,7 @@
 
 ## 📱 Overview
 
-StabilityLoadingPlanner is an Android application designed to assist maritime officers and students in planning cargo loading operations and calculating vessel stability. The app integrates real-time vessel data, global port databases, and live marine weather conditions into a single professional tool.
+StabilityLoadingPlanner is an Android application designed to assist maritime officers and students in planning cargo loading operations and calculating vessel stability. The app integrates real-time vessel data, global port databases, live marine weather conditions, and AI-powered vessel identification into a single professional tool.
 
 The app follows a **freemium business model**: core features are available to all users, while PDF report export is locked behind a PRO subscription (€1/month).
 
@@ -33,25 +33,20 @@ The app follows a **freemium business model**: core features are available to al
 |---|---|
 | 🚢 Vessel Search | Search any vessel worldwide by IMO number via VesselAPI |
 | 📐 Dimension Estimation | Automatic LOA/Beam/DWT estimation from vessel type when API data is unavailable |
+| 🤖 AI Vessel Lookup | Gemini AI as fallback when VesselAPI and shared database have no data |
 | 📦 Cargo Planning | Dynamic hold allocation with cargo type selection and weight input |
 | ⚖️ Stability Calculation | Real-time GM/KG calculation using KB + BM/V naval engineering formulas |
 | 🌊 Marine Conditions | Live sea state from Open-Meteo Marine API (wave height, period, temperature) |
 | 🗺️ Port Search | 3,700+ ports worldwide via NGA World Port Index — browse by country or name |
-| 📸 Vessel Photos | Auto-fetched from Wikimedia Commons by IMO number |
-| 🔐 Authentication | Local user accounts with FREE/PRO tiers |
-| ℹ️ Help & About | Step-by-step usage guide and author information |
+| 📸 Vessel Photos | Auto-fetched from Wikimedia Commons / Wikipedia by IMO number |
+| 🔐 Authentication | Firebase Authentication (email/password) |
+| 🌍 Multilingual | Português, English, Español — automatic (device language) or manual via ⋮ menu |
+| ℹ️ Help & About | Step-by-step usage guide and author identification |
 
 ### PRO (€1/month)
 | Feature | Description |
 |---|---|
 | 📄 PDF Export | Full stability and cargo loading report saved to Downloads |
-
-### Planned (Firebase)
-- Cloud sync of vessel data across devices
-- Collaborative vessel database (community-sourced technical data)
-- Search history per user with "Use Again" button
-- Voyage history with stability results (PRO)
-- Google Sign-In
 
 ---
 
@@ -63,7 +58,10 @@ The app follows a **freemium business model**: core features are available to al
 - **Navigation:** Jetpack Navigation Compose
 - **HTTP:** Retrofit 2 + OkHttp 3
 - **Image Loading:** Coil
+- **Auth:** Firebase Authentication
+- **Database:** Firebase Firestore
 - **PDF Generation:** Android PdfDocument + MediaStore API
+- **AI:** Google Gemini API (gemini-2.0-flash)
 
 ---
 
@@ -74,21 +72,20 @@ The app follows a **freemium business model**: core features are available to al
 | [VesselAPI](https://api.vesselapi.com) | Vessel data by IMO | Bearer token (free tier) |
 | [NGA World Port Index](https://services9.arcgis.com/j1CY4yzWfwptbTWN/arcgis/rest/services/WorldPortIndex_WFL1/FeatureServer/0/) | 3,700+ global ports | None (public) |
 | [Open-Meteo Marine](https://marine-api.open-meteo.com) | Live sea conditions | None (public) |
-| [Wikimedia Commons](https://commons.wikimedia.org) | Vessel photos by IMO | None (User-Agent required) |
+| [Wikimedia Commons](https://commons.wikimedia.org) | Vessel photos | None (User-Agent required) |
 | [Wikipedia](https://en.wikipedia.org) | Vessel article photos | None (User-Agent required) |
+| [Google Gemini](https://ai.google.dev) | AI vessel identification | API Key |
 
 ---
 
 ## 🧮 Stability Calculation
 
-The app computes metacentric height (GM) using simplified naval architecture formulas:
-
 ```
 Draft  = Displacement / (LOA × Beam × 0.75)
-KB     = Draft / 2                                    (rectangular section approximation)
-BM     = (LOA × Beam³ / 12) / (Displacement / 1.025) (BM = I / V)
+KB     = Draft / 2
+BM     = (LOA × Beam³ / 12) / (Displacement / 1.025)
 KMT    = KB + BM
-KG     = Σ(weight_i × VCG_i) / Σ(weight_i)          (weighted centre of gravity)
+KG     = Σ(weight_i × VCG_i) / Σ(weight_i)
 GM     = KMT − KG
 ```
 
@@ -101,31 +98,32 @@ A vessel is considered **stable** when GM ≥ 0.15 m.
 ```
 app/src/main/java/com/example/stabilityloadingplanner/
 ├── api/
+│   ├── GeminiApiService.kt      ← Google Gemini AI (vessel identification)
 │   ├── OpenMeteoApi.kt          ← Retrofit clients (weather, ports, wiki, vessel)
 │   ├── PortApiService.kt        ← NGA World Port Index endpoints
 │   ├── VesselApiService.kt      ← VesselAPI endpoint
 │   └── VesselPhotoApiService.kt ← Wikipedia + Wikimedia Commons endpoints
 ├── data/
 │   └── models/
-│       ├── MarineModels.kt      ← Open-Meteo response models
-│       ├── PortModels.kt        ← Port query response models
-│       ├── Tank.kt              ← Tank + CargoType data classes
-│       ├── Vessel.kt            ← Vessel data class
-│       ├── VesselApiModels.kt   ← VesselAPI response models
-│       ├── VesselDatabase.kt    ← In-memory local vessel store
-│       ├── VesselPhotoModels.kt ← Wikipedia/Commons response models
-│       ├── Voyage.kt            ← Voyage data class
-│       ├── User.kt              ← User data class
-│       └── LocalUserDatabase.kt ← In-memory user store
+│       ├── MarineModels.kt
+│       ├── PortModels.kt
+│       ├── Tank.kt
+│       ├── Vessel.kt
+│       ├── VesselApiModels.kt
+│       ├── VesselDatabase.kt
+│       ├── VesselPhotoModels.kt
+│       ├── Voyage.kt
+│       ├── User.kt
+│       └── LocalUserDatabase.kt
 └── ui/
     └── theme/
-        ├── Color.kt             ← Design tokens (industrial maritime palette)
-        ├── Theme.kt             ← Material 3 theme
-        ├── Type.kt              ← Typography
-        ├── Components.kt        ← Shared composables (BottomNav, AppMenuActions)
-        ├── AppNavigation.kt     ← NavHost with all routes
-        ├── VesselViewModel.kt   ← Central ViewModel
-        ├── AuthViewModel.kt     ← Authentication ViewModel
+        ├── Color.kt             ← Industrial maritime palette
+        ├── Theme.kt
+        ├── Type.kt
+        ├── Components.kt        ← ExactBottomNav, AppMenuActions, language dialog
+        ├── AppNavigation.kt
+        ├── VesselViewModel.kt   ← Central ViewModel (AI lookup, marine data, cargo)
+        ├── AuthViewModel.kt
         ├── LoginScreen.kt
         ├── RegisterScreen.kt
         ├── VesselSetupScreen.kt
@@ -138,6 +136,11 @@ app/src/main/java/com/example/stabilityloadingplanner/
         ├── ProfileScreen.kt
         ├── AboutScreen.kt
         └── HelpScreen.kt
+
+app/src/main/res/
+├── values/strings.xml           ← English (default)
+├── values-pt/strings.xml        ← Português
+└── values-es/strings.xml        ← Español
 ```
 
 ---
@@ -145,39 +148,34 @@ app/src/main/java/com/example/stabilityloadingplanner/
 ## ⚙️ Setup
 
 ### Prerequisites
-- Android Studio Hedgehog or newer
-- Android SDK 26+
+- Android Studio Meerkat or newer
+- Android SDK 24+
 - JDK 17
 
-### API Key Configuration
+### API Keys
 
-This app requires a **VesselAPI key**. Never commit the key to version control.
-
-1. Go to [vesselapi.com](https://vesselapi.com) and create a free account
-2. Copy your API key
-3. Open (or create) `local.properties` in the project root:
+Create `local.properties` in the project root:
 
 ```properties
 sdk.dir=/path/to/your/Android/sdk
-VESSEL_API_KEY=your_api_key_here
+VESSEL_API_KEY=your_vessel_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-> ⚠️ `local.properties` is listed in `.gitignore` and will never be committed.
+- **VesselAPI key:** [vesselapi.com](https://vesselapi.com) → free account
+- **Gemini API key:** [aistudio.google.com](https://aistudio.google.com) → Get API key → Create API key
+
+> ⚠️ `local.properties` is git-ignored and never committed.
 
 ### Build
 
 ```bash
-# Clone the repository
 git clone https://github.com/Alemaozinho/CM_Git.git
 cd CM_Git/Projeto
-
-# Open in Android Studio and let Gradle sync
-# Then: Build → Run 'app'
+# Open in Android Studio → Build → Run 'app'
 ```
 
 ### Test Accounts
-
-The app ships with two built-in test accounts:
 
 | Email | Password | Plan |
 |---|---|---|
@@ -188,43 +186,45 @@ The app ships with two built-in test accounts:
 
 ## 🔒 Security
 
-- API keys stored in `local.properties` (git-ignored)
-- Keys accessed at runtime via `BuildConfig` (generated by Gradle)
-- `buildConfig = true` enabled in `build.gradle.kts`
-- `google-services.json` listed in `.gitignore` (never committed)
+- API keys in `local.properties` (git-ignored)
+- Keys accessed at runtime via `BuildConfig`
+- `buildConfig = true` in `build.gradle.kts`
+- `google-services.json` git-ignored
 
 ---
 
-## 🚧 Roadmap
+## 🌍 Multilingual Support
 
-- [ ] **Firebase Auth** — replace local user database with Firebase Authentication
-- [ ] **Firestore** — cloud sync of vessels, voyages, and search history
-- [ ] **Community vessel database** — users contribute real technical data by IMO
-- [ ] **Multilingual support** — PT + EN + ES (strings.xml)
-- [ ] **Google Sign-In** — Firebase Auth extra provider (+1 grade point)
-- [ ] **Search history** — "Use Again" button for previously searched vessels
-- [ ] **Voyage history** (PRO) — archive of past voyages with stability reports
+The app supports **Português, English, and Español**. Language is selected automatically from the device system language, or manually via the ⋮ menu → "Language / Idioma" dialog. The selection persists across sessions via `SharedPreferences` and is applied via `attachBaseContext` in `MainActivity`.
 
 ---
 
-## 📐 Architecture (planned with Firebase)
+## 🤖 AI Integration (Gemini)
+
+The app uses Google Gemini as a third fallback in the vessel lookup chain:
 
 ```
-┌──────────────────────────────────────────┐
-│               Firestore                  │
-│  vessels/{imo}         (shared — all)    │
-│  users/{uid}/                            │
-│    searchHistory/      (private)         │
-│    savedVessels/       (private)         │
-│    voyages/            (PRO only)        │
-└──────────────────────────────────────────┘
-          ↑
-   VesselViewModel
-          ↑
-   Jetpack Compose UI
+Firestore shared DB → VesselAPI → Gemini AI → local estimates
 ```
 
-**Data flow:** IMO search → check Firestore `vessels/{imo}` → if found, use cached real data → if not, call VesselAPI + estimate dimensions → if user corrects via ✎, save back to Firestore for all future users.
+When Gemini is available, it identifies the vessel by IMO and returns technical dimensions in JSON format. The integration uses `gemini-2.0-flash` on the free tier (1500 req/day). If the quota is exhausted, the app falls back gracefully to local estimation formulas.
+
+---
+
+## 📐 Firebase Architecture
+
+```
+Firestore (root)
+├── vessels/{imo}         [SHARED — all users read/write]
+│   └── Community-sourced vessel database
+│       Users who correct estimated dimensions contribute to all future users
+│
+└── users/{uid}/          [PRIVATE — per authenticated user]
+    ├── profile/
+    ├── searchHistory/
+    ├── savedVessels/
+    └── voyages/          [PRO only]
+```
 
 ---
 
